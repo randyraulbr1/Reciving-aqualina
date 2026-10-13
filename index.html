@@ -281,7 +281,7 @@ $('shut').onclick=async()=>{
  if(cfg.vibrar&&navigator.vibrate)navigator.vibrate(30);
  const id=Date.now()+Math.random(),ts=Math.floor(id);
  const b=await blobOf(v,v.videoWidth,v.videoHeight,cfg.calidad,.85,cfg.sello?stampTxt(ts,cfg.nombre):null);
- if(cfg.copia){try{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Receiving_${(cfg.nombre||'foto').replace(/[^\w]+/g,'_')}_${ts}.jpg`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);toast('Guardada en galería ✓')}catch(e){}}
+ if(cfg.copia){try{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Receiving_${(cfg.nombre||'foto').replace(/[^\w]+/g,'_')}_${ts}.jpg`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}catch(e){}}
  try{await tx('p','readwrite',s=>s.put({id,ts,t0:Date.now(),por:cfg.nombre||'',blob:b,on:cfg.auto}))}catch(e){toast('No se pudo guardar la foto (poco espacio)');return}
  $('count').textContent=++session;
  try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
