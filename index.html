@@ -12,7 +12,8 @@
 <title>Receiving</title>
 <style>
 :root{--bg:#faf6ef;--card:#fff;--text:#2a2220;--muted:#9a8c78;--blue:#c8102e;--green:#c8102e;--red:#c8102e;--gold:#a98f5b;--line:#e6dcc8}
-@media(prefers-color-scheme:dark){:root{--bg:#140c0e;--card:#211416;--text:#f5eee0;--muted:#a8997f;--line:#3d2c2a;--gold:#c4a96d}}
+:root[data-t=dark]{--bg:#140c0e;--card:#211416;--text:#f5eee0;--muted:#a8997f;--line:#3d2c2a;--gold:#c4a96d}
+@media(prefers-color-scheme:dark){:root[data-t=auto]{--bg:#140c0e;--card:#211416;--text:#f5eee0;--muted:#a8997f;--line:#3d2c2a;--gold:#c4a96d}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
 h1,.head b,.grp .top b{font-family:'Cormorant Garamond',Didot,'Bodoni 72',Georgia,serif}
@@ -169,6 +170,8 @@ const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,auto:true,volver:true,autoenv:true,copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 if((cfg.mig||0)<3){cfg.copia=!_ios;cfg.mig=3}
+if(!cfg.tema)cfg.tema='claro';
+function aplTema(){document.documentElement.dataset.t=cfg.tema=='oscuro'?'dark':cfg.tema=='auto'?'auto':'light'}aplTema();
 const save=()=>localStorage.setItem('cfg',JSON.stringify(cfg));
 let dip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(tab==='opc')draw()});
 addEventListener('appinstalled',()=>{dip=null;toast('App instalada ✓');if(tab==='opc')draw()});
@@ -230,6 +233,7 @@ function draw(){
   <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
   <div class="opt"><span>Guardar cada foto en la galería<br><small style="color:var(--muted)">${_ios?'En iPhone pregunta cada vez: mejor apagado':'Copia en la carpeta Descargas'}</small></span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido ✓':'Normal'}</span></div>
+  <div class="opt"><span>Tema</span><select id="otm"><option value="claro">Claro</option><option value="oscuro">Oscuro</option><option value="auto">Automático</option></select></div>
   <div class="opt"><span>Recordatorio de enviar (30 min)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
   <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
   <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
@@ -249,7 +253,7 @@ function draw(){
   $('oprf').onclick=pickName;$('oadm').onclick=adminLogin;
   $('o5').value=cfg.titulo;$('o5').oninput=e=>{cfg.titulo=e.target.value;save()};
   $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
-  $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
+  $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};$('otm').value=cfg.tema;$('otm').onchange=e=>{cfg.tema=e.target.value;save();aplTema()};$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
   $('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};$('o2').onchange=e=>{cfg.camara=e.target.value;save()};
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};$('o4').onchange=e=>{cfg.auto=e.target.checked;save()};
  }
