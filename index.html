@@ -228,8 +228,13 @@ function draw(){
   <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
   <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
   <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>
+  <div class="card" style="margin-bottom:14px"><label class="t">Link de la app</label><div id="lnk" style="word-break:break-all;font-size:15px;margin:2px 0 12px"></div><button class="btn" id="cpl" style="margin:0">Copiar link</button></div>
   <button class="btn" id="inst" ${standalone()?'disabled':''}>${standalone()?'Abierta como app ✓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg> Instalar en el teléfono'}</button>
   <div id="iosh" class="card" style="display:none;line-height:1.7"></div>`;
+  const url=location.origin+location.pathname.replace(/index\.html$/,'');
+  $('lnk').textContent=url;
+  $('cpl').onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(url);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=url;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}}
+   $('cpl').textContent=ok?'Link copiado ✓':'No se pudo copiar';setTimeout(()=>{if($('cpl'))$('cpl').textContent='Copiar link'},2000);toast(ok?'Link copiado':'Mantén presionado el link para copiarlo')};
   $('inst').onclick=async()=>{
    if(dip){dip.prompt();await dip.userChoice;dip=null;return}
    const h=$('iosh');h.style.display='block';
