@@ -239,6 +239,7 @@ function draw(){
   <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
   <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>
   <div class="card" style="margin-bottom:14px"><label class="t">Link de la app</label><div id="lnk" style="word-break:break-all;font-size:15px;margin:2px 0 12px"></div><button class="btn" id="cpl" style="margin:0">Copiar link</button></div>
+  <button class="btn" id="gall" style="margin-bottom:10px"></button>
   <button class="btn" id="inst" ${standalone()?'disabled':''}>${standalone()?'Abierta como app ✓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg> Instalar en el teléfono'}</button>
   <div id="iosh" class="card" style="display:none;line-height:1.7"></div>`;
   const url=location.origin+location.pathname.replace(/index\.html$/,'');
@@ -253,6 +254,9 @@ function draw(){
   $('oprf').onclick=pickName;$('oadm').onclick=adminLogin;
   $('o5').value=cfg.titulo;$('o5').oninput=e=>{cfg.titulo=e.target.value;save()};
   $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
+  const gn=()=>photos.filter(p=>!p.g).length;const gl=()=>{$('gall').textContent=gn()?`Guardar nuevas en el carrete (${gn()})`:'Todas ya guardadas ✓';$('gall').disabled=!gn()};gl();
+  $('gall').onclick=async()=>{const nv=photos.filter(p=>!p.g);if(!nv.length)return;const files=nv.map((p,i)=>new File([p.blob],`Receiving_${p.id}.jpg`,{type:'image/jpeg'}));
+   try{if(!(navigator.canShare&&navigator.canShare({files}))){toast('Este navegador no puede guardar así');return}await navigator.share({files});for(const p of nv){p.g=true;await tx('p','readwrite',s=>s.put(p))}gl();toast('Guardadas ✓')}catch(e){if(e.name!=='AbortError')toast('No se pudo guardar')}};
   $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};$('otm').value=cfg.tema;$('otm').onchange=e=>{cfg.tema=e.target.value;save();aplTema()};$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
   $('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};$('o2').onchange=e=>{cfg.camara=e.target.value;save()};
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};$('o4').onchange=e=>{cfg.auto=e.target.checked;save()};
@@ -297,7 +301,7 @@ $('shut').onclick=async()=>{
  const id=Date.now()+Math.random(),ts=Math.floor(id);
  const b=await blobOf(v,v.videoWidth,v.videoHeight,cfg.calidad,.85,cfg.sello?stampTxt(ts,cfg.nombre):null);
  if(cfg.copia){try{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Receiving_${(cfg.nombre||'foto').replace(/[^\w]+/g,'_')}_${ts}.jpg`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}catch(e){}}
- try{await tx('p','readwrite',s=>s.put({id,ts,t0:Date.now(),por:cfg.nombre||'',blob:b,on:cfg.auto}))}catch(e){toast('No se pudo guardar la foto (poco espacio)');return}
+ try{await tx('p','readwrite',s=>s.put({id,ts,t0:Date.now(),por:cfg.nombre||'',blob:b,on:cfg.auto,g:!!cfg.copia}))}catch(e){toast('No se pudo guardar la foto (poco espacio)');return}
  $('count').textContent=++session;
  try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
  const im=new Image();im.src=URL.createObjectURL(b);$('strip').appendChild(im);
