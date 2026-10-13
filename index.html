@@ -269,6 +269,7 @@ function revisa2am(){if(cfg.nombre&&vencido(cfg.nombreTs)){cfg.nombre='';cfg.nom
 function setName(n){cfg.nombre=n;cfg.nombreTs=Date.now();save();draw()}
 const capOf=p=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}</div>`;
 function pickName(){
+ bajaLista().then(c=>{if(c&&document.querySelector('#mbx .pk'))pickName()});
  const l=cfg.empleados;
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span>✓</span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}`,close=>{
   document.querySelectorAll('#mbx .pk').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i])})})}
@@ -391,7 +392,7 @@ setInterval(tick,300);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)nextTry=0});
 $('send').onclick=enviar;
 addEventListener('offline',()=>draw());
-async function bajaLista(){if(!navigator.onLine)return;try{const r=await fetch('empleados.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(Array.isArray(j.empleados)&&j.empleados.length&&(+j.v||0)>(cfg.listaV||0)){cfg.empleados=j.empleados.map(x=>String(x).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));cfg.listaV=+j.v;save();draw()}}catch(e){}}
+async function bajaLista(){if(!navigator.onLine)return;try{const r=await fetch('empleados.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(Array.isArray(j.empleados)&&j.empleados.length&&(+j.v||0)!==(cfg.listaV||0)){cfg.empleados=j.empleados.map(x=>String(x).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));cfg.listaV=+j.v;save();draw();return true}}catch(e){}return false}
 setTimeout(bajaLista,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)bajaLista()});
 addEventListener('online',()=>{bajaLista();draw();const q=photos.filter(p=>p.q).length;if(q){toast('Hay conexión: '+q+' en cola');try{if(window.Notification&&Notification.permission==='granted')new Notification('Receiving',{body:q+' foto(s) listas para enviar'})}catch(e){}}});
 let persistido=false;if(navigator.storage&&navigator.storage.persist){navigator.storage.persisted().then(v=>v?v:navigator.storage.persist()).then(v=>{persistido=!!v;if(tab==='opc')draw()}).catch(()=>{})}
