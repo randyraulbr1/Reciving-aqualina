@@ -152,7 +152,7 @@ main{padding-top:calc(env(safe-area-inset-top) + 40px)!important}
 <script>
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
-const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,auto:true,volver:true,autoenv:true,copia:false,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
+const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,auto:true,volver:true,autoenv:true,copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
 const save=()=>localStorage.setItem('cfg',JSON.stringify(cfg));
 let dip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(tab==='opc')draw()});
 addEventListener('appinstalled',()=>{dip=null;toast('App instalada ✓');if(tab==='opc')draw()});
@@ -212,9 +212,10 @@ function draw(){
   <div class="opt"><span>Cámara</span><select id="o2"><option value="environment">Trasera</option><option value="user">Frontal</option></select></div>
   <div class="opt"><span>Vibrar al tomar foto</span><label class="sw"><input type="checkbox" id="o3"><i></i></label></div>
   <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
-  <div class="opt"><span>Guardar copia en el teléfono (descargas)</span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
+  <div class="opt"><span>Guardar cada foto en la galería<br><small style="color:var(--muted)">Copia en la carpeta Descargas</small></span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido ✓':'Normal'}</span></div>
   <div class="opt"><span>Enviar solo al grupo (10 s)<br><small style="color:var(--muted)">Solo funciona con el link del grupo puesto</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
+  <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
   <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
   <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>
   <button class="btn" id="inst" ${standalone()?'disabled':''}>${standalone()?'Abierta como app ✓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg> Instalar en el teléfono'}</button>
@@ -227,7 +228,7 @@ function draw(){
   $('oprf').onclick=pickName;$('oadm').onclick=adminLogin;
   $('o5').value=cfg.titulo;$('o5').oninput=e=>{cfg.titulo=e.target.value;save()};
   $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
-  $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
+  $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
   $('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};$('o2').onchange=e=>{cfg.camara=e.target.value;save()};
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};$('o4').onchange=e=>{cfg.auto=e.target.checked;save()};
  }
@@ -304,7 +305,7 @@ async function enviar(opts){
   draw();toast('Sin internet: quedó en cola');return'skip'}
  const base=nombre.replace(/[^\w]+/g,'_');
  const files=sel.map((p,i)=>new File([p.blob],`${base}_${i+1}.jpg`,{type:'image/jpeg'}));
- const data={files,text:`📸 ${nombre} — ${files.length} foto${files.length>1?'s':''}`};
+ const ahora=Date.now();const data={files,text:`📸 ${nombre} — ${files.length} foto${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}`};
  try{
   if(navigator.canShare&&navigator.canShare({files}))await navigator.share(data);
   else{if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'Este navegador no puede enviar fotos directo')}if(!auto){if(cfg.wlink)window.open(cfg.wlink,'_blank');else window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');toast('Este navegador no envía fotos directo')}return'error'}
