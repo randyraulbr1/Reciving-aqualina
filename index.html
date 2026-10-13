@@ -258,7 +258,7 @@ function setName(n){cfg.nombre=n;cfg.nombreTs=Date.now();save();draw()}
 const capOf=p=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}</div>`;
 function pickName(){
  bajaLista().then(c=>{if(c&&document.querySelector('#mbx .pk'))pickName()});
- const l=cfg.empleados;
+ const l=[...cfg.empleados].sort((a,b)=>(b===cfg.nombre)-(a===cfg.nombre));
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span>✓</span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}`,close=>{
   document.querySelectorAll('#mbx .pk').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i])})})}
 function adminLogin(){
