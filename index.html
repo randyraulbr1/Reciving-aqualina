@@ -143,8 +143,13 @@ main{padding-top:calc(env(safe-area-inset-top) + 40px)!important}
 #rec b{font-family:'Cormorant Garamond',Didot,Georgia,serif;font-size:25px;display:block;margin-bottom:6px;font-weight:600}
 #rec p{margin:0 0 18px;color:var(--muted)}
 #rec .btn{margin:0 0 10px}#rec .btn.no{background:var(--bg);color:var(--text)}
+html,body{overscroll-behavior-y:contain}
+#ptr{position:fixed;top:0;left:50%;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:var(--card);box-shadow:0 3px 12px rgba(120,6,28,.3);border:1px solid var(--line);z-index:90;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(-60px);pointer-events:none;transition:opacity .2s}
+#ptr i{width:22px;height:22px;border-radius:50%;border:3px solid #f1c4cb;border-top-color:#c8102e;display:block}
+#ptr.go i{animation:sp .7s linear infinite}
 </style></head><body>
 <div id="splash"><img class="lg" src="icon-192.png" alt=""><h2 id="sptit">Receiving</h2><div class="spin"></div></div>
+<div id="ptr"><i></i></div>
 <div id="busy"><div class="spin"></div><span id="btxt">Preparando…</span></div>
 <button id="chip" aria-label="Cambiar nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span id="chn"></span></button>
 <main id="m"></main>
@@ -356,6 +361,17 @@ function tick(){
  if(sel.some(p=>now-(p.ts||Math.floor(p.id))>=1800000)&&now>=nextTry){nextTry=now+120000;recordar()}
 }
 setInterval(tick,300);
+(function(){let y0=0,pull=0,act=false;const el=$('ptr');
+ const blocked=()=>stream||document.querySelector('#mdl.show,#rec.show,#dlg.show');
+ addEventListener('touchstart',e=>{if(scrollY<=0&&!blocked()&&!el.classList.contains('go')){y0=e.touches[0].clientY;act=true;pull=0}else act=false},{passive:true});
+ addEventListener('touchmove',e=>{if(!act)return;const d=e.touches[0].clientY-y0;if(d<=0){pull=0;el.style.opacity=0;return}
+  pull=Math.min(d*.55,100);el.style.transition='none';el.style.transform=`translateY(${pull-40}px) rotate(${pull*5}deg)`;el.style.opacity=Math.min(1,pull/50)},{passive:true});
+ addEventListener('touchend',()=>{if(!act)return;act=false;el.style.transition='opacity .2s, transform .25s';
+  if(pull>=65){el.classList.add('go');el.style.opacity=1;el.style.transform='translateY(48px)';
+   try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})}catch(e){}
+   setTimeout(()=>location.reload(),700)}
+  else{el.style.opacity=0;el.style.transform='translateY(-60px)'}pull=0});
+})();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)nextTry=0});
 $('send').onclick=enviar;
 addEventListener('offline',()=>draw());
