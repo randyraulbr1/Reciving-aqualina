@@ -222,22 +222,11 @@ function draw(){
   m.innerHTML=`<h1>Opciones</h1><div class="card">
   <div class="opt"><span>Perfil</span><button class="btn" id="oprf" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0">${cfg.nombre?esc(cfg.nombre):'Elegir'}</button></div>
   <div class="opt"><span>Administrador</span><button class="btn" id="oadm" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0;background:var(--gold)">Entrar</button></div>
-  <div class="opt"><span>Link del grupo de WhatsApp</span></div>
-  <div class="opt" style="border:0;padding-top:0"><input type="text" id="ow" placeholder="https://chat.whatsapp.com/..." inputmode="url" style="text-align:left;width:100%;background:var(--bg);border-radius:12px;padding:11px 12px;font-size:15px"></div>
-  <div class="opt"><span>Abrir el grupo después de compartir</span><label class="sw"><input type="checkbox" id="oa"><i></i></label></div>
-  <div class="opt"><span>Título</span><input type="text" id="o5" placeholder="Receiving"></div>
-  <div class="opt"><span>Logo</span><span><button class="btn" id="lg" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0">Elegir</button> ${cfg.logo?'<button class="btn red" id="lgx" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0 0 0 6px">Quitar</button>':''}</span></div>
-  <div class="opt"><span>Calidad de foto</span><select id="o1"><option value="1000">Baja (rápida)</option><option value="1600">Media</option><option value="2600">Alta</option></select></div>
   <div class="opt"><span>Cámara</span><select id="o2"><option value="environment">Trasera</option><option value="user">Frontal</option></select></div>
   <div class="opt"><span>Vibrar al tomar foto</span><label class="sw"><input type="checkbox" id="o3"><i></i></label></div>
-  <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
-  <div class="opt"><span>Guardar cada foto en la galería<br><small style="color:var(--muted)">${_ios?'En iPhone pregunta cada vez: mejor apagado':'Copia en la carpeta Descargas'}</small></span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido ✓':'Normal'}</span></div>
   <div class="opt"><span>Tema</span><select id="otm"><option value="claro">Claro</option><option value="oscuro">Oscuro</option><option value="auto">Automático</option></select></div>
-  <div class="opt"><span>Recordatorio de enviar (30 min)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
-  <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
-  <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
-  <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>
+  <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div></div>
   <div class="card" style="margin-bottom:14px"><label class="t">Link de la app</label><div id="lnk" style="word-break:break-all;font-size:15px;margin:2px 0 12px"></div><button class="btn" id="cpl" style="margin:0">Copiar link</button></div>
   <button class="btn" id="gall" style="margin-bottom:10px"></button>
   <button class="btn" id="inst" ${standalone()?'disabled':''}>${standalone()?'Abierta como app ✓':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg> Instalar en el teléfono'}</button>
@@ -250,16 +239,12 @@ function draw(){
    if(dip){dip.prompt();await dip.userChoice;dip=null;return}
    const h=$('iosh');h.style.display='block';
    h.innerHTML=isIOS()?'<b>En iPhone / iPad:</b><br>1. Abre este link en <b>Safari</b>.<br>2. Toca el botón Compartir <b>⬆️</b> (abajo).<br>3. Elige <b>Añadir a pantalla de inicio</b>.<br>4. Toca <b>Añadir</b>.':'<b>En Android:</b><br>1. Abre este link en <b>Chrome</b>.<br>2. Toca el menú <b>⋮</b> (arriba a la derecha).<br>3. Elige <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b>.'};
-  $('ow').value=cfg.wlink;$('ow').oninput=e=>{cfg.wlink=e.target.value.trim();save()};$('oa').checked=cfg.wabrir;$('oa').onchange=e=>{cfg.wabrir=e.target.checked;save()};
   $('oprf').onclick=pickName;$('oadm').onclick=adminLogin;
-  $('o5').value=cfg.titulo;$('o5').oninput=e=>{cfg.titulo=e.target.value;save()};
-  $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
   const gn=()=>photos.filter(p=>!p.g).length;const gl=()=>{$('gall').textContent=gn()?`Guardar nuevas en el carrete (${gn()})`:'Todas ya guardadas ✓';$('gall').disabled=!gn()};gl();
   $('gall').onclick=async()=>{const nv=photos.filter(p=>!p.g);if(!nv.length)return;const files=nv.map((p,i)=>new File([p.blob],`Receiving_${p.id}.jpg`,{type:'image/jpeg'}));
    try{if(!(navigator.canShare&&navigator.canShare({files}))){toast('Este navegador no puede guardar así');return}await navigator.share({files});for(const p of nv){p.g=true;await tx('p','readwrite',s=>s.put(p))}gl();toast('Guardadas ✓')}catch(e){if(e.name!=='AbortError')toast('No se pudo guardar')}};
-  $('o1').value=cfg.calidad;$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('o4').checked=cfg.auto;$('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};$('otm').value=cfg.tema;$('otm').onchange=e=>{cfg.tema=e.target.value;save();aplTema()};$('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};$('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};$('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
-  $('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};$('o2').onchange=e=>{cfg.camara=e.target.value;save()};
-  $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};$('o4').onchange=e=>{cfg.auto=e.target.checked;save()};
+  $('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('otm').value=cfg.tema;$('otm').onchange=e=>{cfg.tema=e.target.value;save();aplTema()};$('o6').checked=cfg.volver;$('o6').onchange=e=>{cfg.volver=e.target.checked;save()};
+  $('o2').onchange=e=>{cfg.camara=e.target.value;save()};$('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
 }
 function pedir(fn,t,sub,lbl){const d=$('dlg');d.querySelector('b').textContent=t||'¿Borrar esta foto?';d.querySelector('p').style.display=(t&&!sub)?'none':'';d.querySelector('p').textContent=sub||'No se puede deshacer.';d.classList.add('show');$('dno').onclick=()=>d.classList.remove('show');$('dyes').onclick=()=>{d.classList.remove('show');fn()};$('dyes').textContent=lbl||(t?'Sí, quitar':'Sí, borrar');d.onclick=e=>{if(e.target===d)d.classList.remove('show')}}
@@ -277,11 +262,34 @@ function adminLogin(){
  modal(`<h3>Administrador</h3><div class="row2"><input type="password" id="apw" inputmode="numeric" placeholder="Contraseña" autocomplete="off"><button class="btn" id="aok">Entrar</button></div>`,close=>{
   const go=()=>{if($('apw').value==='1010'){adminPanel()}else{toast('Contraseña incorrecta');$('apw').value=''}};
   $('aok').onclick=go;$('apw').onkeydown=e=>{if(e.key==='Enter')go()};setTimeout(()=>$('apw').focus(),150)})}
+const admOpts=()=>`<div class="card" style="margin:0 0 14px"><label class="t">Ajustes de la app</label>
+  <div class="opt"><span>Link del grupo de WhatsApp</span></div>
+  <div class="opt" style="border:0;padding-top:0"><input type="text" id="ow" placeholder="https://chat.whatsapp.com/..." inputmode="url" style="text-align:left;width:100%;background:var(--bg);border-radius:12px;padding:11px 12px;font-size:15px"></div>
+  <div class="opt"><span>Abrir el grupo después de compartir</span><label class="sw"><input type="checkbox" id="oa"><i></i></label></div>
+  <div class="opt"><span>Título</span><input type="text" id="o5" placeholder="Receiving"></div>
+  <div class="opt"><span>Logo</span><span><button class="btn" id="lg" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0">Elegir</button> ${cfg.logo?'<button class="btn red" id="lgx" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0 0 0 6px">Quitar</button>':''}</span></div>
+  <div class="opt"><span>Calidad de foto</span><select id="o1"><option value="1000">Baja (rápida)</option><option value="1600">Media</option><option value="2600">Alta</option></select></div>
+  <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
+  <div class="opt"><span>Guardar cada foto en la galería<br><small style="color:var(--muted)">${_ios?'En iPhone pregunta cada vez: mejor apagado':'Copia en la carpeta Descargas'}</small></span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
+  <div class="opt"><span>Recordatorio de enviar (30 min)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
+  <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
+  <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>`;
+function wireAdm(){
+  $('ow').value=cfg.wlink;$('ow').oninput=e=>{cfg.wlink=e.target.value.trim();save()};$('oa').checked=cfg.wabrir;$('oa').onchange=e=>{cfg.wabrir=e.target.checked;save()};
+  $('o5').value=cfg.titulo;$('o5').oninput=e=>{cfg.titulo=e.target.value;save()};
+  $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
+  $('o1').value=cfg.calidad;$('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};
+  $('o4').checked=cfg.auto;$('o4').onchange=e=>{cfg.auto=e.target.checked;save()};
+  $('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};
+  $('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};
+  $('o8').checked=cfg.copia;$('o8').onchange=e=>{cfg.copia=e.target.checked;save()};
+  $('o7').checked=cfg.sello;$('o7').onchange=e=>{cfg.sello=e.target.checked;save()}}
 const tokG=()=>{try{return localStorage.getItem('gtk')||''}catch(e){return''}};
 function adminPanel(){
- modal(`<h3>Empleados</h3><div class="row2"><input type="text" id="anew" placeholder="Nombre nuevo" autocomplete="off"><button class="btn" id="aadd">Agregar</button></div>${cfg.empleados.length?cfg.empleados.map((n,i)=>`<div class="emp"><span>${esc(n)}</span><button data-i="${i}">Quitar</button></div>`).join(''):'<p style="text-align:center;color:var(--muted)">Sin empleados todavía.</p>'}<div class="card" style="margin:16px 0 0"><label class="t">Publicar lista en GitHub (todos los teléfonos)</label><input type="password" id="gtk" placeholder="Token de GitHub (solo este teléfono)" autocomplete="off" value="${esc(tokG())}" style="width:100%;margin:6px 0 10px"><button class="btn" id="gpub">Guardar en GitHub</button></div><button class="btn red" id="aclh" style="margin:16px 0 0">Borrar historial de envíos</button><button class="btn red" id="aclp" style="margin:10px 0 0">Vaciar fotos pendientes</button>`,close=>{
+ modal(`<h3>Administrador</h3>${admOpts()}<label class="t" style="display:block;margin:4px 0 8px">Empleados</label><div class="row2"><input type="text" id="anew" placeholder="Nombre nuevo" autocomplete="off"><button class="btn" id="aadd">Agregar</button></div>${cfg.empleados.length?cfg.empleados.map((n,i)=>`<div class="emp"><span>${esc(n)}</span><button data-i="${i}">Quitar</button></div>`).join(''):'<p style="text-align:center;color:var(--muted)">Sin empleados todavía.</p>'}<div class="card" style="margin:16px 0 0"><label class="t">Publicar lista en GitHub (todos los teléfonos)</label><input type="password" id="gtk" placeholder="Token de GitHub (solo este teléfono)" autocomplete="off" value="${esc(tokG())}" style="width:100%;margin:6px 0 10px"><button class="btn" id="gpub">Guardar en GitHub</button></div><button class="btn red" id="aclh" style="margin:16px 0 0">Borrar historial de envíos</button><button class="btn red" id="aclp" style="margin:10px 0 0">Vaciar fotos pendientes</button>`,close=>{
   $('aclp').onclick=()=>pedir(async()=>{await tx('p','readwrite',s=>s.clear());photos.forEach(p=>URL.revokeObjectURL(urls[p.id]));urls={};await load();toast('Pendientes vaciadas')},'¿Vaciar fotos pendientes?','Se borrarán '+photos.length+' foto(s) que aún no se enviaron. No se puede deshacer.','Sí, vaciar');
   $('aclh').onclick=()=>pedir(async()=>{await tx('h','readwrite',s=>s.clear());await load();toast('Historial borrado')},'¿Borrar todo el historial?','Se borrarán todos los envíos y sus fotos. No se puede deshacer.','Sí, borrar todo');
+  wireAdm();
   $('gpub').onclick=async()=>{const t=$('gtk').value.trim();if(!t){toast('Pega el token primero');return}try{localStorage.setItem('gtk',t)}catch(e){}if(!navigator.onLine){toast('Sin internet');return}busy(true,'Publicando…');
    try{const u='https://api.github.com/repos/randyraulbr1/Reciving-aqualina/contents/empleados.json',h={Authorization:'Bearer '+t,Accept:'application/vnd.github+json'};
     const g=await fetch(u,{headers:h,cache:'no-store'});if(!g.ok)throw new Error(g.status==401?'Token inválido':'Error '+g.status);const gj=await g.json();let rv=0;try{rv=JSON.parse(decodeURIComponent(escape(atob(gj.content.replace(/\s/g,'')))) ).v||0}catch(e){}
