@@ -162,6 +162,7 @@ main{padding-top:calc(env(safe-area-inset-top) + 40px)!important}
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,auto:true,volver:true,autoenv:true,copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
+if((cfg.mig||0)<2){cfg.copia=true;cfg.mig=2}
 const save=()=>localStorage.setItem('cfg',JSON.stringify(cfg));
 let dip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(tab==='opc')draw()});
 addEventListener('appinstalled',()=>{dip=null;toast('App instalada ✓');if(tab==='opc')draw()});
@@ -247,7 +248,7 @@ function modal(html,bind){const m=$('mdl');$('mbx').innerHTML=html;m.classList.a
 function vencido(ts){const d=new Date(),b=new Date(d);b.setHours(2,0,0,0);if(d<b)b.setDate(b.getDate()-1);return ts<b.getTime()}
 function revisa2am(){if(cfg.nombre&&vencido(cfg.nombreTs)){cfg.nombre='';cfg.nombreTs=0;save();if(!stream)draw()}}
 function setName(n){cfg.nombre=n;cfg.nombreTs=Date.now();save();draw()}
-const capOf=p=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}<div class="pb" data-id="${p.id}"><i></i><em></em></div></div>`;
+const capOf=p=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}</div>`;
 function pickName(){
  const l=cfg.empleados;
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span>✓</span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}`,close=>{
@@ -280,8 +281,8 @@ $('shut').onclick=async()=>{
  if(cfg.vibrar&&navigator.vibrate)navigator.vibrate(30);
  const id=Date.now()+Math.random(),ts=Math.floor(id);
  const b=await blobOf(v,v.videoWidth,v.videoHeight,cfg.calidad,.85,cfg.sello?stampTxt(ts,cfg.nombre):null);
+ if(cfg.copia){try{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Receiving_${(cfg.nombre||'foto').replace(/[^\w]+/g,'_')}_${ts}.jpg`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);toast('Guardada en galería ✓')}catch(e){}}
  try{await tx('p','readwrite',s=>s.put({id,ts,t0:Date.now(),por:cfg.nombre||'',blob:b,on:cfg.auto}))}catch(e){toast('No se pudo guardar la foto (poco espacio)');return}
- if(cfg.copia){try{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Receiving_${(cfg.nombre||'foto').replace(/[^\w]+/g,'_')}_${ts}.jpg`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}catch(e){}}
  $('count').textContent=++session;
  try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
  const im=new Image();im.src=URL.createObjectURL(b);$('strip').appendChild(im);
