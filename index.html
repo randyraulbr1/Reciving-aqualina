@@ -122,6 +122,9 @@ input[type=file]{display:none}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:14px}
 .seg button{flex:1;border:0;background:none;color:var(--muted);padding:9px 2px;border-radius:10px;font-size:14px;font-weight:600}
 .seg button i{font-style:normal;font-size:12px;margin-left:5px;background:var(--bg);color:var(--text);border-radius:9px;padding:1px 7px}
+.fbar .cal{width:44px;display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--blue);border:1px solid var(--line);border-radius:12px;padding:0}.fbar .cal.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.cal-h b{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:600;color:var(--gold)}.cal-h button{width:38px;height:38px;border:1px solid var(--line);background:var(--bg);color:var(--blue);border-radius:12px;font-size:22px;line-height:1}
+.cal-w,.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.cal-w span{font-size:12px;color:var(--muted);padding:4px 0}.cal-g i{display:block}.cal-g button{aspect-ratio:1;border:0;background:none;border-radius:50%;font-size:16px;color:var(--text);position:relative;padding:0}.cal-g button.hoy{box-shadow:inset 0 0 0 1.5px var(--gold)}.cal-g button.sel{background:var(--blue);color:#fff}.cal-g button.dot:after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--gold)}.cal-g button.sel.dot:after{background:#fff}
 .fbar{display:flex;gap:8px;margin-bottom:14px}.fbar input{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;color:var(--text);min-width:0}.fbar input[type=search]{flex:1}.fbar button{border:0;background:var(--blue);color:#fff;border-radius:12px;width:40px;font-size:16px}
 .seg button.on{background:var(--blue);color:#fff}.seg button.on i{background:rgba(255,255,255,.25);color:#fff}
 .grp.bad{border-color:var(--blue)}.mot{color:var(--blue);font-size:14px;margin:-4px 0 10px}
@@ -219,9 +222,9 @@ function draw(){
   if(hTab==='pend')body=photos.length?`<div class="grid">${photos.map(p=>{const u=urls[p.id]||(urls[p.id]=URL.createObjectURL(p.blob));return`<div class="tile" data-dk="${dKey(p.ts||p.id)}" data-st="${esc(sTxt(p.ts||p.id,p.por).toLowerCase())}"><div class="ph"><img src="${u}"><span class="bd">${p.q?'En cola':'Pendiente'}</span></div>${capOf(p)}</div>`}).join('')}</div>`:empty(CLK,'No hay fotos pendientes.');
   else if(hTab==='env')body=ok.length?ok.map(h=>grp(h,false)).join(''):empty(CLK,'Aquí verás cada envío agrupado con el nombre de quien lo mandó.');
   else body=er.length?er.map(h=>grp(h,true)).join(''):empty(CLK,'Sin errores.');
-  m.innerHTML=`<h1>Historial</h1><div class="seg"><button data-h="pend" class="${hTab==='pend'?'on':''}">Pendientes<i>${photos.length}</i></button><button data-h="env" class="${hTab==='env'?'on':''}">Enviadas<i>${okN}</i></button><button data-h="err" class="${hTab==='err'?'on':''}">Errores<i>${erN}</i></button></div><div class="fbar"><input type="search" id="hq" placeholder="Buscar nombre o día (ej. lunes)" value="${esc(hF.q)}"><input type="date" id="hd" value="${hF.d}"><button id="hx" ${hF.q||hF.d?'':'style="display:none"'}>✕</button></div>${body}`;
+  m.innerHTML=`<h1>Historial</h1><div class="seg"><button data-h="pend" class="${hTab==='pend'?'on':''}">Pendientes<i>${photos.length}</i></button><button data-h="env" class="${hTab==='env'?'on':''}">Enviadas<i>${okN}</i></button><button data-h="err" class="${hTab==='err'?'on':''}">Errores<i>${erN}</i></button></div><div class="fbar"><input type="search" id="hq" placeholder="Buscar nombre o día (ej. lunes)" value="${esc(hF.q)}"><button id="hd" class="cal${hF.d?' on':''}" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button><button id="hx" ${hF.q||hF.d?'':'style="display:none"'}>✕</button></div>${body}`;
   const aplF=()=>{const q=hF.q.trim().toLowerCase();let n=0;m.querySelectorAll('[data-dk]').forEach(e=>{const ok=(!hF.d||e.dataset.dk.split(' ').includes(hF.d))&&(!q||e.dataset.st.includes(q));e.style.display=ok?'':'none';if(ok)n++});$('hx').style.display=hF.q||hF.d?'':'none';let z=$('hnone');if(!n&&m.querySelector('[data-dk]')){if(!z){z=document.createElement('div');z.id='hnone';z.className='empty';z.textContent='Sin resultados.';m.appendChild(z)}}else if(z)z.remove()};
-  $('hq').oninput=e=>{hF.q=e.target.value;aplF()};$('hd').onchange=e=>{hF.d=e.target.value;aplF()};$('hx').onclick=()=>{hF.q='';hF.d='';$('hq').value='';$('hd').value='';aplF()};aplF();
+  $('hq').oninput=e=>{hF.q=e.target.value;aplF()};$('hd').onclick=()=>calModal(()=>{aplF();$('hd').classList.toggle('on',!!hF.d)});$('hx').onclick=()=>{hF.q='';hF.d='';$('hq').value='';$('hd').classList.remove('on');aplF()};aplF();
   m.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{hTab=x.dataset.h;draw()});
  }else{
   m.innerHTML=`<div class="ops"><h1>Opciones</h1><div class="card">
@@ -261,6 +264,20 @@ function pickName(){
  const l=[...cfg.empleados].sort((a,b)=>(b===cfg.nombre)-(a===cfg.nombre));
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span>✓</span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}`,close=>{
   document.querySelectorAll('#mbx .pk').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i])})})}
+
+function calModal(done){
+ const dias=new Set();hist.forEach(h=>{dias.add(dKey(h.id));(h.info||[]).forEach(f=>dias.add(dKey(f.ts)))});photos.forEach(p=>dias.add(dKey(p.ts||p.id)));
+ let base=hF.d?new Date(hF.d+'T12:00:00'):new Date();let y=base.getFullYear(),mo=base.getMonth();const hoy=dKey(Date.now());
+ const draw=close=>{
+  const first=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),off=(first.getDay()+6)%7;
+  const nm=first.toLocaleDateString('es',{month:'long',year:'numeric'});
+  let cells='';for(let i=0;i<off;i++)cells+='<i></i>';
+  for(let d=1;d<=n;d++){const k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');cells+=`<button data-k="${k}" class="${k===hF.d?'sel':''}${k===hoy?' hoy':''}${dias.has(k)?' dot':''}">${d}</button>`}
+  $('mbx').innerHTML=`<div class="cal-h"><button id="cp">‹</button><b>${nm.charAt(0).toUpperCase()+nm.slice(1)}</b><button id="cn">›</button></div><div class="cal-w">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div><div class="cal-g">${cells}</div><div class="brow" style="margin-top:12px"><button class="btn red s" id="cq" style="margin:0">Quitar filtro</button><button class="btn s" id="ch" style="margin:0">Hoy</button></div>`;
+  $('cp').onclick=()=>{if(--mo<0){mo=11;y--}draw(close)};$('cn').onclick=()=>{if(++mo>11){mo=0;y++}draw(close)};
+  document.querySelectorAll('.cal-g button').forEach(b=>b.onclick=()=>{hF.d=b.dataset.k;close();done()});
+  $('cq').onclick=()=>{hF.d='';close();done()};$('ch').onclick=()=>{hF.d=hoy;close();done()}};
+ modal('',close=>draw(close))}
 function adminLogin(){
  modal(`<h3>Administrador</h3><p style="text-align:center;color:var(--muted);margin:0 0 12px;font-size:14px">Escribe el código de 4 números</p><div class="pin" id="pin">${[0,1,2,3].map(i=>`<input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" data-i="${i}">`).join('')}</div>`,close=>{
   const bx=[...document.querySelectorAll('#pin input')];
