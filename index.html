@@ -1,6 +1,8 @@
 <!doctype html>
-<html lang="es"><head>
+<html lang="en" translate="no" class="notranslate"><head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
+<script>try{var c=JSON.parse(localStorage.getItem("cfg")||"{}");document.documentElement.lang=c.idioma==="es"?"es":"en"}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#c8102e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -187,7 +189,8 @@ const EN_={'Cancelar':'Cancel','Compartir':'Share','Compartir ahora':'Share now'
 const RX_=[[/^Compartir \((\d+)\)$/,'Share ($1)'],[/^Guardar nuevas en el carrete \((\d+)\)$/,'Save new to Photos ($1)'],[/^Sin conexión · (\d+) en cola$/,'Offline · $1 queued'],[/^Hay conexión · (\d+) fotos? en cola$/,'Online · $1 queued'],[/^Hay conexión: (\d+) en cola$/,'Back online: $1 queued'],[/^Hola, (.*)$/,'Hi, $1'],[/^¿Quitar a (.*)\?$/,'Remove $1?'],[/^Se borrarán (\d+) foto\(s\) que aún no se enviaron\. No se puede deshacer\.$/,'$1 photo(s) not yet sent will be deleted. This cannot be undone.'],[/^Tienes (\d+) fotos? sin enviar\. La más vieja lleva (.+)\. Toca para compartirlas ahora\.$/,'You have $1 photo(s) not sent. The oldest is $2 old. Tap to share them now.'],[/^No se pudo compartir: (.*)$/,'Could not share: $1'],[/^Error (\d+)$/,'Error $1'],[/^(\d+) paquetes$/,'$1 packages'],[/(\d+) seleccionadas?/g,'$1 selected'],[/(\d+) fotos?\b/g,(m,n)=>n+(n==1?' photo':' photos')]];
 function trs(s){if(!s||cfg.idioma!=='en')return s;const k=s.trim();if(!k)return s;const a=s.match(/^\s*/)[0],z=s.match(/\s*$/)[0];if(EN_[k]!==undefined)return a+EN_[k]+z;let o=k;for(const [r,f] of RX_){const n=o.replace(r,f);if(n!==o){o=n;if(r.source[0]==='^')break}}return a+o+z}
 function trDom(n){if(cfg.idioma!=='en'||!n)return;if(n.nodeType===3){const v=trs(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;return}if(n.nodeType!==1)return;const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while(t=w.nextNode()){const v=trs(t.nodeValue);if(v!==t.nodeValue)t.nodeValue=v}const q=[n,...n.querySelectorAll('[placeholder],[aria-label],[title]')];q.forEach(e=>['placeholder','aria-label','title'].forEach(a=>{if(e.getAttribute&&e.hasAttribute(a)){const v=trs(e.getAttribute(a));if(v!==e.getAttribute(a))e.setAttribute(a,v)}}))}
-if(cfg.idioma==='en'){document.documentElement.lang='en';new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')trDom(m.target);else if(m.type==='attributes')trDom(m.target);else m.addedNodes.forEach(trDom)}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title']});trDom(document.body)}
+document.documentElement.lang=cfg.idioma==='es'?'es':'en';
+if(cfg.idioma==='en'){new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')trDom(m.target);else if(m.type==='attributes')trDom(m.target);else m.addedNodes.forEach(trDom)}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title']});trDom(document.body)}
 
 function aplTema(){document.documentElement.dataset.t=cfg.tema=='oscuro'?'dark':cfg.tema=='auto'?'auto':'light'}aplTema();
 const save=()=>localStorage.setItem('cfg',JSON.stringify(cfg));
