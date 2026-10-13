@@ -224,7 +224,7 @@ function draw(){
   <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
   <div class="opt"><span>Guardar cada foto en la galería<br><small style="color:var(--muted)">Copia en la carpeta Descargas</small></span><label class="sw"><input type="checkbox" id="o8"><i></i></label></div>
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido ✓':'Normal'}</span></div>
-  <div class="opt"><span>Recordatorio de enviar (10 s)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
+  <div class="opt"><span>Recordatorio de enviar (30 min)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
   <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
   <div class="opt"><span>Volver tras cada foto</span><label class="sw"><input type="checkbox" id="o6"><i></i></label></div>
   <div class="opt"><span>Fotos nuevas seleccionadas</span><label class="sw"><input type="checkbox" id="o4"><i></i></label></div></div>
@@ -333,7 +333,8 @@ const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+'
 const recOpen=()=>$('rec').classList.contains('show');
 function recordar(){
  const n=photos.filter(p=>p.on).length;if(!n||recOpen())return;
- $('recn').textContent=`Tienes ${n} foto${n>1?'s':''} sin enviar. Toca para compartirlas ahora.`;
+ const viejo=Math.max(...photos.filter(p=>p.on).map(p=>Date.now()-(p.ts||Math.floor(p.id))));const mins=Math.floor(viejo/60000);const lleva=mins>=60?Math.floor(mins/60)+' h '+(mins%60)+' min':mins+' min';
+ $('recn').textContent=`Tienes ${n} foto${n>1?'s':''} sin enviar. La más vieja lleva ${lleva}. Toca para compartirlas ahora.`;
  $('rec').classList.add('show');
  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
  try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification('Receiving',{body:'¿Olvidaste enviar las fotos? Tienes '+n+' sin enviar.'})}catch(e){}
@@ -347,7 +348,7 @@ function tick(){
   const f=Math.min(1,(now-(p.t0||now))/10000);i.style.width=(f*100)+'%';el.classList.toggle('blk',f>=1);
   t.textContent=!cfg.nombre?'Elige tu nombre':!navigator.onLine?'Esperando conexión':f<1?`Aviso en ${Math.ceil(10-f*10)} s`:recOpen()?'Envía las fotos':'Aviso en '+mmss(nextTry-now)});
  if(!cfg.autoenv||!sel.length||!cfg.nombre||stream||recOpen()||!navigator.onLine)return;
- if(sel.every(p=>now-(p.t0||now)>=10000)&&now>=nextTry){nextTry=now+120000;recordar()}
+ if(sel.some(p=>now-(p.ts||Math.floor(p.id))>=1800000)&&now>=nextTry){nextTry=now+120000;recordar()}
 }
 setInterval(tick,300);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)nextTry=0});
