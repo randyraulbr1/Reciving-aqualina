@@ -368,11 +368,11 @@ function ayerCheck(){
   $('ayno').onclick=close;if($('ay0'))$('ay0').onclick=()=>{close();enviar({only:mine.map(p=>p.id)})};
   document.querySelectorAll('#mbx [data-ay]').forEach(b=>b.onclick=()=>{const [k,l]=oth[+b.dataset.ay];close();enviar({owner:k,only:l.map(p=>p.id)})})})}
 const capOf=(p,ed)=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${ed?`<button class="apc${aptL(p)?' set':''}">${aptL(p)?esc(aptL(p)):'+ Apt'}</button><br>`:(aptL(p)?`<span class="ap">${esc(aptL(p))}</span><br>`:'')}${p.nt?`<span class="ap" style="background:var(--orange,#f59e0b)">${esc((NT_.find(x=>x[0]===p.nt)||[])[1]||'')}</span><br>`:''}${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}</div>`;
-function pickName(){
- bajaLista().then(c=>{if(c&&document.querySelector('#mbx .pk'))pickName()});
+function pickName(cb){
+ bajaLista().then(c=>{if(c&&document.querySelector('#mbx .pk'))pickName(cb)});
  const l=[...cfg.empleados].sort((a,b)=>(b===cfg.nombre)-(a===cfg.nombre));
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span>✓</span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}`,close=>{
-  document.querySelectorAll('#mbx .pk').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i])})})}
+  document.querySelectorAll('#mbx .pk').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i]);if(cb)setTimeout(cb,150)})})}
 
 function calModal(done){
  const dias=new Set();hist.forEach(h=>{dias.add(dKey(h.id));(h.info||[]).forEach(f=>dias.add(dKey(f.ts)))});photos.forEach(p=>dias.add(dKey(p.ts||p.id)));
@@ -453,6 +453,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 $('gear').onclick=()=>{tab='opc';draw();scrollTo(0,0)};document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw();scrollTo(0,0)});
 // ---- cámara: cada toque guarda al instante ----
 async function openCam(){
+ if(!(cfg.nombre||'').trim()){toast('Elige tu nombre primero');pickName(()=>openCam());return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('fcam').click();return}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cfg.camara},width:{ideal:2560},height:{ideal:1440}},audio:false});}
  catch(e){toast('Sin permiso de cámara');$('fcam').click();return}
