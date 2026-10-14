@@ -74,6 +74,7 @@ select{font-size:16px;border:0;background:var(--bg);color:var(--text);padding:8p
 #flip{font-size:30px}
 #strip{position:absolute;left:0;right:0;bottom:140px;display:flex;gap:6px;padding:0 12px;overflow-x:auto}
 #strip{bottom:132px;padding:6px 12px}#strip .th{position:relative;flex:none;animation:pop .25s}#strip img{width:62px;height:62px;border-radius:12px;object-fit:cover;border:2px solid #fff;display:block}#strip .th span{position:absolute;top:-6px;left:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff}
+#ctools{position:absolute;right:14px;top:90px;display:flex;flex-direction:column;gap:12px}#ctools button{width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:15px;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center}#ctools button.on{background:var(--gold);color:#000}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 #flash.on{animation:fl .25s}@keyframes fl{from{opacity:.8}to{opacity:0}}
 input[type=file]{display:none}
@@ -175,7 +176,7 @@ html,body{overscroll-behavior-y:contain}
 <main id="m"></main>
 <div class="dock"><div class="send" id="sendbox"><button class="btn wa" id="send" disabled>Compartir</button><button class="btn camb" id="bcam" aria-label="Abrir cámara"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg>Cámara</button><button class="btn camb sp" id="bspec" aria-label="Paneles">+</button></div>
 <div class="tabs"><button data-t="fotos"><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></span>Fotos</button><button data-t="hist"><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg></span>Historial</button><button data-t="opc"><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>Opciones</button></div></div>
-<div id="cam"><div id="aptbar"><div class="nsw"><button data-ns="N">N</button><button data-ns="S">S</button></div><input id="apt" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Apt (opcional)"></div><video id="vid" playsinline muted autoplay></video><div id="flash"></div><div id="strip"></div>
+<div id="cam"><div id="aptbar"><div class="nsw"><button data-ns="N">N</button><button data-ns="S">S</button></div><input id="apt" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Apt (opcional)"></div><video id="vid" playsinline muted autoplay></video><div id="flash"></div><div id="ctools"><button id="tbtn" aria-label="Linterna" style="display:none"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M13 2 5 13.5h5.5L9.5 22 19 9.5h-5.8z"/></svg></button><button id="zbtn" aria-label="Zoom" style="display:none">1x</button></div><div id="strip"></div>
 <div class="ctl"><div id="count">0</div><button id="shut" aria-label="Foto"></button><div style="display:flex;flex-direction:column;align-items:center;gap:6px"><button id="flip"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.9-3M4 5v3.5h3.5"/><path d="M4 13a8 8 0 0 0 14.9 3M20 19v-3.5h-3.5"/></svg></button><button id="done">Listo</button></div></div></div>
 <input id="flogo" type="file" accept="image/*">
 <input id="fcam" type="file" accept="image/*" capture="environment">
@@ -422,8 +423,15 @@ async function openCam(){
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('fcam').click();return}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cfg.camara},width:{ideal:2560},height:{ideal:1440}},audio:false});}
  catch(e){toast('Sin permiso de cámara');$('fcam').click();return}
- $('vid').srcObject=stream;$('aptbar').style.display=spec?'none':'';$('apt').value='';curNS=cfg.ns||'';setNS();session=0;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');
+ $('vid').srcObject=stream;setupTools();$('aptbar').style.display=spec?'none':'';$('apt').value='';curNS=cfg.ns||'';setNS();session=0;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');
 }
+function setupTools(){
+ const tr=stream&&stream.getVideoTracks()[0],cp=tr&&tr.getCapabilities?tr.getCapabilities():{},tb=$('tbtn'),zb=$('zbtn');
+ tb.style.display=cp.torch?'flex':'none';tb.classList.remove('on');
+ tb.onclick=async()=>{const on=!tb.classList.contains('on');try{await tr.applyConstraints({advanced:[{torch:on}]});tb.classList.toggle('on',on)}catch(e){toast('No disponible')}};
+ if(cp.zoom&&cp.zoom.max>cp.zoom.min){const mn=cp.zoom.min,steps=[1,2,3].map(k=>mn*k).filter(v=>v<=cp.zoom.max+1e-6);let i=0;zb.style.display='flex';zb.textContent='1x';zb.classList.remove('on');
+  zb.onclick=async()=>{i=(i+1)%steps.length;try{await tr.applyConstraints({advanced:[{zoom:steps[i]}]});zb.textContent=(i+1)+'x';zb.classList.toggle('on',i>0)}catch(e){}}}
+ else zb.style.display='none'}
 function closeCam(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('cam').classList.remove('show');load()}
 $('shut').onclick=async()=>{
  const v=$('vid');if(!v.videoWidth)return;
