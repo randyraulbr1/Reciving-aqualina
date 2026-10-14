@@ -36,6 +36,7 @@ input[type=text]{width:100%;border:0;background:transparent;font-size:19px;color
 .ph{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--line);animation:pop .25s}
 @keyframes pop{from{transform:scale(.8);opacity:0}}
 .ph img{width:100%;height:100%;object-fit:cover;display:block}
+*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}body{-webkit-user-select:none;user-select:none}input,textarea{-webkit-user-select:text;user-select:text}
 .chk{position:absolute;left:6px;top:6px;width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.25);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
 .chk:before{content:"";position:absolute;inset:-8px}.ph.on .chk{background:var(--blue);border-color:var(--blue)}
 .del{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:26px;line-height:1}
@@ -486,6 +487,7 @@ async function specForm(){const ids=specIds.slice(),ks=specKeys;const recs=(awai
 $('flip').onclick=()=>{cfg.camara=cfg.camara==='user'?'environment':'user';save();if(stream)stream.getTracks().forEach(t=>t.stop());openCam()};
 $('flogo').onchange=e=>{const f=e.target.files[0];if(!f)return;const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const k=Math.min(1,500/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);cfg.logo=c.toDataURL('image/png');save();URL.revokeObjectURL(u);draw();toast('Logo guardado')};i.src=u;e.target.value=''};
 $('fcam').onchange=async e=>{for(const f of e.target.files)await fromFile(f);e.target.value='';toast('Foto guardada')};
+addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()});
 // ---- compartir ----
 const busy=(on,t)=>{$('btxt').textContent=t||'Preparando…';$('busy').classList.toggle('show',on)};
 function netBar(){
