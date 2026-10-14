@@ -47,7 +47,9 @@ input[type=text]{width:100%;border:0;background:transparent;font-size:19px;color
 .bd.ok{background:var(--blue)}
 .ph.sent img{opacity:.75}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}.empty .big{color:var(--gold);opacity:.6}.empty .big .ic{width:64px;height:64px;stroke-width:1.2}
-.dock{position:fixed;left:0;right:0;bottom:0;background:var(--bg) var(--ptd) 0 0/400px 150px repeat;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--bg) var(--ptd) 0 0/400px 150px repeat;border-top:0;padding-bottom:env(safe-area-inset-bottom)}
+.dock:before{content:'';position:absolute;left:50%;top:0;width:calc(100% - 28px);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--gold)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(90deg,var(--gold),transparent) right center/calc(50% - 26px) 1px no-repeat}
+.dock:after{content:'';position:absolute;left:50%;top:0;width:15px;height:15px;transform:translate(-50%,-50%) rotate(45deg);background:var(--red);border-radius:4px;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--gold)}
 .send{padding:12px 16px 4px;display:flex;gap:10px}
 .send .btn{flex:1;height:58px;margin:0;padding:0 8px;font-size:17px;letter-spacing:.3px}
 .camb{background:var(--gold)!important}.camb.sp{background:var(--blue)!important;flex:none;width:auto;padding:0 14px;font-size:14px}
