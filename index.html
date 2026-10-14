@@ -23,7 +23,7 @@ main{padding:env(safe-area-inset-top) 16px calc(170px + env(safe-area-inset-bott
 h1{font-size:30px;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);text-align:center;margin:26px 0 22px;padding-bottom:30px;position:relative}
 .r1{position:relative;z-index:0;display:inline-block;margin:0 .32em 0 .26em}.r1 svg{position:absolute;left:50%;top:50%;width:1.95em;height:1.95em;transform:translate(-50%,-50%);z-index:-1}
 h1 .eb{display:block;font-family:inherit;font-size:11px;letter-spacing:7px;font-weight:600;color:var(--gold);opacity:.9;margin:0 0 10px;padding-left:7px}
-h1:before{content:'';position:absolute;left:50%;bottom:5px;width:72%;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--gold) 22%,transparent 22%,transparent 78%,var(--gold) 78%,transparent)}
+h1:before{content:'';position:absolute;left:50%;bottom:5px;width:calc(100% - 28px);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--gold)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(90deg,var(--gold),transparent) right center/calc(50% - 26px) 1px no-repeat}
 h1:after{content:'';position:absolute;left:50%;bottom:-12px;width:34px;height:34px;transform:translateX(-50%) rotate(45deg) scale(.45);background:var(--blue);border-radius:30% 30% 30% 30%;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--gold)}
 .card{background:var(--card);border-radius:18px;padding:14px 16px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(120,90,40,.08);margin-bottom:14px}
 label.t{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
