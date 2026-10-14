@@ -178,7 +178,7 @@ html,body{overscroll-behavior-y:contain}
 <div class="ctl"><div id="count">0</div><button id="shut" aria-label="Foto"></button><div style="display:flex;flex-direction:column;align-items:center;gap:6px"><button id="flip"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.9-3M4 5v3.5h3.5"/><path d="M4 13a8 8 0 0 0 14.9 3M20 19v-3.5h-3.5"/></svg></button><button id="done">Listo</button></div></div></div>
 <input id="flogo" type="file" accept="image/*">
 <input id="fcam" type="file" accept="image/*" capture="environment">
-<div id="rec"><div class="bx"><div class="ic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></div><b>¿Olvidaste enviar las fotos?</b><p id="recn"></p><button class="btn" id="recgo">Compartir ahora</button><button class="btn no" id="recno">Más tarde</button></div></div>
+<div id="rec"><div class="bx"><div class="ic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></div><b>¿Olvidaste enviar las fotos?</b><p id="recn"></p><p id="recg" style="margin:-8px 0 16px;font-size:14px;font-weight:700;color:var(--blue)"></p><button class="btn" id="recgo">Compartir ahora</button><button class="btn no" id="recno">Más tarde</button></div></div>
 <div id="mdl"><div class="bx" id="mbx"></div></div>
 <div id="dlg"><div class="bx"><b>¿Borrar esta foto?</b><p>No se puede deshacer.</p><div class="r"><button class="btn no" id="dno">Cancelar</button><button class="btn" id="dyes">Sí, borrar</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -436,7 +436,7 @@ function netBar(){
 }
 async function logErr(nombre,sel,motivo){const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||''})),estado:'error',motivo}));await load()}
 const grupoOk=()=>/^https?:\/\//i.test((cfg.wlink||'').trim());
-let nextTry=0,blocked=false,trying=false,lastErr=0;
+let lastRem=+(()=>{try{return localStorage.getItem('lrem')}catch(e){return 0}})()||0;let nextTry=0,blocked=false,trying=false,lastErr=0;
 async function enviar(opts){
  const auto=!!(opts&&opts.auto);
  const nombre=cfg.nombre.trim();
@@ -460,7 +460,7 @@ async function enviar(opts){
  const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));
  await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||''})),blobs:sel.map(p=>p.blob),exp:Date.now()+BIN_MS}));
  for(const p of sel){await tx('p','readwrite',s=>s.delete(p.id));URL.revokeObjectURL(urls[p.id]);delete urls[p.id]}
- await load();busy(false);blocked=false;nextTry=0;$('rec').classList.remove('show');toast('Enviado. Lista vacía');
+ await load();busy(false);blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');toast('Enviado. Lista vacía');
  if(cfg.wlink&&cfg.wabrir)setTimeout(()=>window.open(cfg.wlink,'_blank'),600);
  return'ok'
 }
@@ -470,12 +470,14 @@ function recordar(){
  const n=photos.filter(p=>p.on).length;if(!n||recOpen())return;
  const viejo=Math.max(...photos.filter(p=>p.on).map(p=>Date.now()-(p.ts||Math.floor(p.id))));const mins=Math.floor(viejo/60000);const lleva=mins>=60?Math.floor(mins/60)+' h '+(mins%60)+' min':mins+' min';
  $('recn').textContent=`Tienes ${n} foto${n>1?'s':''} sin enviar. La más vieja lleva ${lleva}. Toca para compartirlas ahora.`;
+ {const g=new Map();photos.filter(p=>p.on).forEach(p=>{const k=aptL(p)||(cfg.idioma==='en'?'No apt':'Sin apt');g.set(k,(g.get(k)||0)+1)});$('recg').textContent=[...g.entries()].map(([k,c])=>k+': '+c).join(' · ')}
+ lastRem=Date.now();try{localStorage.setItem('lrem',String(lastRem))}catch(e){}
  $('rec').classList.add('show');
  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
  try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification('Receiving',{body:trs('¿Olvidaste enviar las fotos?')+' '+n})}catch(e){}
 }
 $('recgo').onclick=()=>{$('rec').classList.remove('show');enviar()};
-$('recno').onclick=()=>{$('rec').classList.remove('show');nextTry=Date.now()+120000};
+$('recno').onclick=()=>{$('rec').classList.remove('show')};
 function tick(){
  const now=Date.now(),sel=photos.filter(p=>p.on);
  document.querySelectorAll('.pb').forEach(el=>{const p=photos.find(x=>String(x.id)===el.dataset.id);if(!p)return;const i=el.firstElementChild,t=el.lastElementChild;el.classList.toggle('off',!cfg.autoenv);
@@ -483,7 +485,7 @@ function tick(){
   const f=Math.min(1,(now-(p.t0||now))/10000);i.style.width=(f*100)+'%';el.classList.toggle('blk',f>=1);
   t.textContent=!cfg.nombre?'Elige tu nombre':!navigator.onLine?'Esperando conexión':f<1?`Aviso en ${Math.ceil(10-f*10)} s`:recOpen()?'Envía las fotos':'Aviso en '+mmss(nextTry-now)});
  if(!cfg.autoenv||!sel.length||!cfg.nombre||stream||recOpen()||!navigator.onLine)return;
- if(sel.some(p=>now-(p.ts||Math.floor(p.id))>=1800000)&&now>=nextTry){nextTry=now+120000;recordar()}
+ if(sel.some(p=>now-(p.ts||Math.floor(p.id))>=1800000)&&now-lastRem>=1800000)recordar()
 }
 setInterval(tick,300);
 (function(){let y0=0,pull=0,act=false;const el=$('ptr');
@@ -497,7 +499,7 @@ setInterval(tick,300);
    setTimeout(()=>location.reload(),700)}
   else{el.style.opacity=0;el.style.transform='translateY(-60px)'}pull=0});
 })();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)nextTry=0});
+
 $('send').onclick=enviar;
 addEventListener('offline',()=>draw());
 async function bajaLista(){if(!navigator.onLine)return;try{const r=await fetch('empleados.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(Array.isArray(j.empleados)&&j.empleados.length&&(+j.v||0)!==(cfg.listaV||0)){cfg.empleados=j.empleados.map(x=>String(x).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));cfg.listaV=+j.v;save();draw();return true}}catch(e){}return false}
