@@ -104,6 +104,7 @@ input[type=file]{display:none}
 @keyframes up{from{transform:translateY(60px);opacity:0}}
 #mdl h3{font-family:'Cormorant Garamond',Didot,Georgia,serif;font-size:24px;font-weight:500;margin:0 0 12px;text-align:center;color:var(--gold)}
 .pk{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:var(--bg);color:var(--text);font-size:18px;padding:14px 16px;border-radius:14px;margin-bottom:8px;text-align:left}
+.pk.pn{justify-content:flex-start;gap:14px}.pk.pn svg{flex:none;color:var(--red)}.pk.pn span{flex:1}
 .pk.on{background:var(--blue);color:#fff}
 .who{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
 .who span{font-size:20px}.who .ph0{color:var(--muted)}
@@ -222,6 +223,7 @@ const fD=ts=>new Date(ts).toLocaleDateString(LOC(),{day:'numeric',month:'short',
 const fT=ts=>new Date(ts).toLocaleTimeString(LOC(),{hour:'numeric',minute:'2-digit',hour12:true}).replace(/\s/g,' ').toUpperCase().replace('A. M.','AM').replace('P. M.','PM');
 const aptL=o=>{const a=(o&&o.apt||'').trim(),n=(o&&o.ns)||'';return a&&n?n+'-'+a:a||n||''};
 const NT_=[['fr','Perecedero, en el refrigerador','perishable, stored in the fridge',1],['md','Medicina, en el refrigerador','medicine, stored in the fridge',1],['wt','Dueño no está hoy, esperar','owner is not home today, need to wait for them'],['na','Dueño no contesta','owner not answering, will try again later'],['hd','Paquete normal, no se puede entregar aún','package on hold, cannot be delivered to the apartment yet'],['cu','Personalizado','']];
+const PI_=['<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M6 10.5h12M9.5 6v2M9.5 13v3.5"/>','<circle cx="10" cy="8" r="3.6"/><path d="M3.5 20.5c0-3.7 2.9-6.2 6.5-6.2s6.5 2.5 6.5 6.2M17.6 5.4l4 4M21.6 5.4l-4 4"/>','<path d="M4 20l1-4.2L16.6 4.2a2.2 2.2 0 0 1 3.2 3.2L8.2 19 4 20zM14.6 6.2l3.2 3.2"/>'];
 const PN_=[['Refrigerador',['fr','md','hd']],['Dueño ausente',['wt','na']],['Personalizado',['cu']]];
 const ntEN=p=>{if(!p||!p.nt)return'';const d=NT_.find(x=>x[0]===p.nt);if(!d)return'';const t=d[0]==='cu'?(p.ntx||'').trim():d[2];if(!t)return'';const lc=(p.loc==='S'?'South':'North')+' receiving';return d[3]?`${t} at ${lc}`:`${t}, left at ${lc}`};
 const gk=p=>aptL(p)+'|'+ntEN(p);
@@ -434,7 +436,7 @@ function adminPanel(){
   $('aadd').onclick=add;$('anew').onkeydown=e=>{if(e.key==='Enter')add()};
   document.querySelectorAll('#mbx .emp button').forEach(b=>b.onclick=()=>{const n=cfg.empleados[+b.dataset.i];pedir(()=>{cfg.empleados.splice(+b.dataset.i,1);if(cfg.nombre===n){cfg.nombre='';cfg.nombreTs=0}save();adminPanel();draw()},'¿Quitar a '+n+'?')})})}
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let spec=false,specIds=[];$('bcam').onclick=()=>{spec=false;openCam()};let specKeys=[];$('bspec').onclick=()=>modal(`<h3>Paneles</h3>${PN_.map((x,i)=>`<button class="pk" data-pn="${i}">${x[0]}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-pn]').forEach(b=>b.onclick=()=>{specKeys=PN_[+b.dataset.pn][1];close();spec=true;specIds=[];openCam()}));$('chip').onclick=pickName;
+let spec=false,specIds=[];$('bcam').onclick=()=>{spec=false;openCam()};let specKeys=[];$('bspec').onclick=()=>modal(`<h3>Paneles</h3>${PN_.map((x,i)=>`<button class="pk pn" data-pn="${i}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${PI_[i]}</svg><span>${x[0]}</span></button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-pn]').forEach(b=>b.onclick=()=>{specKeys=PN_[+b.dataset.pn][1];close();spec=true;specIds=[];openCam()}));$('chip').onclick=pickName;
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw();scrollTo(0,0)});
 // ---- cámara: cada toque guarda al instante ----
 async function openCam(){
