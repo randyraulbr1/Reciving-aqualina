@@ -510,7 +510,7 @@ async function enviar(opts){
   if(navigator.canShare&&navigator.canShare({files}))await navigator.share(data);
   else{if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'Este navegador no puede enviar fotos directo')}if(!auto){if(lk)window.open(lk,'_blank');else window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');toast('Este navegador no envía fotos directo')}return'error'}
  }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'No se pudo compartir: '+(e.message||e.name))}if(!auto)toast('No se pudo compartir');return'error'}
- if(again){toast('Enviado');if(lk&&cfg.wabrir)setTimeout(()=>window.open(lk,'_blank'),600);return'ok'}
+ if(again){toast('Enviado');return'ok'}
  busy(true,'Guardando envío…');
  const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));
  await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sel.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));
