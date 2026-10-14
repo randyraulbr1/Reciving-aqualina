@@ -257,7 +257,7 @@ function badge(){try{const n=photos.length;if(navigator.setAppBadge){if(n)naviga
 async function load(){chkSpace();try{await purge()}catch(e){}photos=(await tx('p','readonly',s=>s.getAll())||[]).sort((a,b)=>a.id-b.id);photos.forEach(p=>p.on=true);hist=(await tx('h','readonly',s=>s.getAll())||[]).sort((a,b)=>b.id-a.id);badge();draw()}
 const wordmark=()=>{const t=(cfg.titulo||'Receiving').trim();return`<span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>${esc(t.charAt(0))}</span>${esc(t.slice(1))}`};
 function draw(){
- document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('gear').classList.toggle('on',tab==='opc');
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('gear').classList.toggle('on',tab==='opc');$('gear').style.display=tab==='fotos'?'':'none';
  $('sendbox').style.display=tab==='fotos'?'':'none';
  const n=photos.filter(p=>p.on).length;
  const nN=photos.filter(p=>p.on&&!p.nt).length,nS=photos.filter(p=>p.on&&p.nt).length;$('send').disabled=!nN;$('send').textContent='Compartir';
