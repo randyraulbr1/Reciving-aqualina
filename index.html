@@ -235,7 +235,8 @@ function warnBar(){let h='';
  if(!standalone())h+=`<div class="net warn"><span>Abre la app desde el icono de tu pantalla de inicio. En el navegador tus fotos pueden borrarse.</span><button id="winst">Cómo instalar</button></div>`;
  if(lowMB!==null)h+=`<div class="net warn"><span>Poco espacio en el teléfono (${lowMB} MB libres). Envía o guarda las fotos y libera espacio.</span></div>`;
  return h}
-async function load(){chkSpace();try{await purge()}catch(e){}photos=(await tx('p','readonly',s=>s.getAll())||[]).sort((a,b)=>a.id-b.id);hist=(await tx('h','readonly',s=>s.getAll())||[]).sort((a,b)=>b.id-a.id);draw()}
+function badge(){try{const n=photos.length;if(navigator.setAppBadge){if(n)navigator.setAppBadge(n).catch(()=>{});else navigator.clearAppBadge().catch(()=>{})}}catch(e){}}
+async function load(){chkSpace();try{await purge()}catch(e){}photos=(await tx('p','readonly',s=>s.getAll())||[]).sort((a,b)=>a.id-b.id);hist=(await tx('h','readonly',s=>s.getAll())||[]).sort((a,b)=>b.id-a.id);badge();draw()}
 function draw(){
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
  $('sendbox').style.display=tab==='fotos'?'':'none';
