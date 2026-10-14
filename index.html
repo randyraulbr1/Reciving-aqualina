@@ -120,7 +120,7 @@ input[type=file]{display:none}
 #splash.out{opacity:0;pointer-events:none}
 #splash .lg{width:104px;height:104px;border-radius:26px;box-shadow:0 8px 24px rgba(120,6,28,.35)}
 #splash .lg svg{width:48px;height:48px}
-#splash h2{margin:0;font-family:'Cormorant Garamond',Didot,Georgia,serif;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);font-size:24px}
+#splash h2{margin:0;white-space:nowrap;font-family:'Cormorant Garamond',Didot,Georgia,serif;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);font-size:30px}#splash h2 .clw{width:58px;height:58px;vertical-align:-18px}#splash h2 .clw b{font-size:36px}
 .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:sp .8s linear infinite}
 #busy .spin{border-color:rgba(255,255,255,.3);border-top-color:#fff}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -173,7 +173,7 @@ html,body{overscroll-behavior-y:contain}
 #ptr i{width:22px;height:22px;border-radius:50%;border:3px solid #f1c4cb;border-top-color:#c8102e;display:block}
 #ptr.go i{animation:sp .7s linear infinite}
 </style></head><body>
-<div id="splash"><img class="lg" src="icon-192.png" alt=""><h2 id="sptit">Receiving</h2><div class="spin"></div></div>
+<div id="splash"><h2 id="sptit"><span class="clw"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13.18 13.18A8 8 0 1 1 26.82 13.18A8 8 0 1 1 26.82 26.82A8 8 0 1 1 13.18 26.82A8 8 0 1 1 13.18 13.18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><b>R</b></span>eceiving</h2><div class="spin"></div></div>
 <div id="ptr"><i></i></div>
 <div id="busy"><div class="spin"></div><span id="btxt">Preparando…</span></div>
 <button id="chip" aria-label="Cambiar nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span id="chn"></span></button>
@@ -247,6 +247,7 @@ function warnBar(){let h='';
  return h}
 function badge(){try{const n=photos.length;if(navigator.setAppBadge){if(n)navigator.setAppBadge(n).catch(()=>{});else navigator.clearAppBadge().catch(()=>{})}}catch(e){}}
 async function load(){chkSpace();try{await purge()}catch(e){}photos=(await tx('p','readonly',s=>s.getAll())||[]).sort((a,b)=>a.id-b.id);photos.forEach(p=>p.on=true);hist=(await tx('h','readonly',s=>s.getAll())||[]).sort((a,b)=>b.id-a.id);badge();draw()}
+const wordmark=()=>{const t=(cfg.titulo||'Receiving').trim();return`<span class="clw"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13.18 13.18A8 8 0 1 1 26.82 13.18A8 8 0 1 1 26.82 26.82A8 8 0 1 1 13.18 26.82A8 8 0 1 1 13.18 13.18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><b>${esc(t.charAt(0))}</b></span>${esc(t.slice(1))}`};
 function draw(){
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
  $('sendbox').style.display=tab==='fotos'?'':'none';
@@ -255,7 +256,7 @@ function draw(){
  const m=$('m');
  $('chn').textContent=cfg.nombre||'Elegir nombre';$('chip').classList.toggle('none',!cfg.nombre);$('chip').classList.toggle('net-on',navigator.onLine);$('chip').classList.toggle('net-off',!navigator.onLine);$('chip').style.display=tab==='fotos'?'':'none';
  if(tab==='fotos'){
-  m.innerHTML=`${cfg.logo?`<img class="logo" src="${cfg.logo}">`:''}<h1><span class="clw"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13.18 13.18A8 8 0 1 1 26.82 13.18A8 8 0 1 1 26.82 26.82A8 8 0 1 1 13.18 26.82A8 8 0 1 1 13.18 13.18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><b>${esc((cfg.titulo||'Receiving').trim().charAt(0))}</b></span>${esc((cfg.titulo||'Receiving').trim().slice(1))}</h1>${warnBar()}${netBar()}
+  m.innerHTML=`${cfg.logo?`<img class="logo" src="${cfg.logo}">`:''}<h1>${wordmark()}</h1>${warnBar()}${netBar()}
   <div class="head"><b>${photos.length?`${photos.length} foto${photos.length>1?'s':''}`:'Sin fotos'}</b>${photos.length?`<span class="hb">${delSel.size?'<button id="trash" aria-label="Borrar seleccionadas"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>':''}${delMode?'<button id="dcancel">Cancelar</button>':''}</span>`:''}</div>
   ${photos.length?`${photos.some(p=>!p.nt)?'<div class="grid" id="grid"></div>':''}${photos.some(p=>p.nt)?`<label class="t" style="display:block;margin:18px 0 8px">Especiales (${photos.filter(p=>p.nt).length})</label>${nS?`<button class="btn s" id="nsp" style="background:var(--blue);margin:0 0 10px">Compartir especiales (${nS})</button>`:''}<div class="grid" id="grid2"></div>`:''}`:'<div class="empty"><div class="big"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></div>Abre la cámara y toma las fotos.<br>Cada foto se guarda sola, sin internet.</div>'}`;
   if($('nsend'))$('nsend').onclick=()=>enviar();if($('nsp'))$('nsp').onclick=()=>enviar({sp:true});if($('winst'))$('winst').onclick=()=>{tab='opc';draw();setTimeout(()=>$('inst')&&$('inst').click(),50)};
@@ -584,6 +585,6 @@ setTimeout(bajaLista,1500);document.addEventListener('visibilitychange',()=>{if(
 addEventListener('online',()=>{bajaLista();draw();const q=photos.filter(p=>p.q).length;if(q){toast('Hay conexión: '+q+' en cola');try{if(window.Notification&&Notification.permission==='granted')new Notification('Receiving',{body:q+(cfg.idioma==='en'?' photo(s) ready to send':' foto(s) listas para enviar')})}catch(e){}}});
 let persistido=false;if(navigator.storage&&navigator.storage.persist){navigator.storage.persisted().then(v=>v?v:navigator.storage.persist()).then(v=>{persistido=!!v;if(tab==='opc')draw()}).catch(()=>{})}
 revisa2am();setInterval(revisa2am,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)revisa2am()});
-open().then(d=>{db=d;return load()}).then(()=>{$('sptit').textContent=cfg.titulo||'Receiving';setTimeout(()=>{$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),500);setTimeout(ayerCheck,300)},600)});
+open().then(d=>{db=d;return load()}).then(()=>{$('sptit').innerHTML=wordmark();setTimeout(()=>{$('splash').classList.add('out');setTimeout(()=>$('splash').remove(),500);setTimeout(ayerCheck,300)},600)});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
