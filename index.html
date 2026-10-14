@@ -581,6 +581,7 @@ async function enviar(opts){
  const by=nombre!==yo?(en?` (sent by ${yo})`:` (enviado por ${yo})`):'';
  const data={files,text:sp?lines.trim():`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
  try{
+  if(!auto){try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}}
   if(navigator.canShare&&navigator.canShare({files}))await navigator.share(data);
   else{if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'Este navegador no puede enviar fotos directo')}if(!auto){if(lk)window.open(lk,'_blank');else window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');toast('Este navegador no envía fotos directo')}return'error'}
  }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'No se pudo compartir: '+(e.message||e.name))}if(!auto){toast('No se pudo compartir ('+(e.name||'error')+')');if(!again&&sel.length>8)setTimeout(()=>pedir(()=>enviar({only:sel.slice(0,8).map(p=>p.id)}),'No se pudieron enviar todas juntas','Prueba enviando las primeras 8 y luego toca Compartir otra vez.','Enviar 8'),400)}return'error'}
