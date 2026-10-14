@@ -21,7 +21,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system
 h1,.head b,.grp .top b{font-family:'Cormorant Garamond',Didot,'Bodoni 72',Georgia,serif}
 main{padding:env(safe-area-inset-top) 16px calc(170px + env(safe-area-inset-bottom))}
 h1{font-size:30px;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);text-align:center;margin:26px 0 22px;padding-bottom:30px;position:relative}
-.clw{position:relative;display:inline-block;width:50px;height:50px;vertical-align:-15px;margin-right:1px;letter-spacing:0}.clw svg{position:absolute;inset:0;width:100%;height:100%;color:var(--red)}.clw b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:500;color:var(--gold);font-size:30px;line-height:1;padding-top:2px}
+.r1{position:relative;z-index:0;display:inline-block;margin:0 .32em 0 .26em}.r1 svg{position:absolute;left:50%;top:50%;width:1.95em;height:1.95em;transform:translate(-50%,-50%);z-index:-1}
 h1:after{content:'';position:absolute;left:50%;bottom:-6px;width:34px;height:34px;transform:translateX(-50%) rotate(45deg) scale(.45);background:var(--blue);border-radius:30% 30% 30% 30%;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--gold)}
 .card{background:var(--card);border-radius:18px;padding:14px 16px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(120,90,40,.08);margin-bottom:14px}
 label.t{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
@@ -120,7 +120,7 @@ input[type=file]{display:none}
 #splash.out{opacity:0;pointer-events:none}
 #splash .lg{width:104px;height:104px;border-radius:26px;box-shadow:0 8px 24px rgba(120,6,28,.35)}
 #splash .lg svg{width:48px;height:48px}
-#splash h2{margin:0;white-space:nowrap;font-family:'Cormorant Garamond',Didot,Georgia,serif;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);font-size:30px}#splash h2 .clw{width:58px;height:58px;vertical-align:-18px}#splash h2 .clw b{font-size:36px}
+#splash h2{margin:0;white-space:nowrap;font-family:'Cormorant Garamond',Didot,Georgia,serif;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:var(--gold);font-size:30px}
 .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:sp .8s linear infinite}
 #busy .spin{border-color:rgba(255,255,255,.3);border-top-color:#fff}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -173,7 +173,7 @@ html,body{overscroll-behavior-y:contain}
 #ptr i{width:22px;height:22px;border-radius:50%;border:3px solid #f1c4cb;border-top-color:#c8102e;display:block}
 #ptr.go i{animation:sp .7s linear infinite}
 </style></head><body>
-<div id="splash"><h2 id="sptit"><span class="clw"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13.18 13.18A8 8 0 1 1 26.82 13.18A8 8 0 1 1 26.82 26.82A8 8 0 1 1 13.18 26.82A8 8 0 1 1 13.18 13.18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><b>R</b></span>eceiving</h2><div class="spin"></div></div>
+<div id="splash"><h2 id="sptit"><span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>R</span>eceiving</h2><div class="spin"></div></div>
 <div id="ptr"><i></i></div>
 <div id="busy"><div class="spin"></div><span id="btxt">Preparando…</span></div>
 <button id="chip" aria-label="Cambiar nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span id="chn"></span></button>
@@ -247,7 +247,7 @@ function warnBar(){let h='';
  return h}
 function badge(){try{const n=photos.length;if(navigator.setAppBadge){if(n)navigator.setAppBadge(n).catch(()=>{});else navigator.clearAppBadge().catch(()=>{})}}catch(e){}}
 async function load(){chkSpace();try{await purge()}catch(e){}photos=(await tx('p','readonly',s=>s.getAll())||[]).sort((a,b)=>a.id-b.id);photos.forEach(p=>p.on=true);hist=(await tx('h','readonly',s=>s.getAll())||[]).sort((a,b)=>b.id-a.id);badge();draw()}
-const wordmark=()=>{const t=(cfg.titulo||'Receiving').trim();return`<span class="clw"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13.18 13.18A8 8 0 1 1 26.82 13.18A8 8 0 1 1 26.82 26.82A8 8 0 1 1 13.18 26.82A8 8 0 1 1 13.18 13.18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><b>${esc(t.charAt(0))}</b></span>${esc(t.slice(1))}`};
+const wordmark=()=>{const t=(cfg.titulo||'Receiving').trim();return`<span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>${esc(t.charAt(0))}</span>${esc(t.slice(1))}`};
 function draw(){
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
  $('sendbox').style.display=tab==='fotos'?'':'none';
