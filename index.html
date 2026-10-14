@@ -473,7 +473,7 @@ async function openCam(){
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('fcam').click();return}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cfg.camara},width:{ideal:2560},height:{ideal:1440}},audio:false});}
  catch(e){toast('Sin permiso de cámara');$('fcam').click();return}
- $('vid').srcObject=stream;setupTools();{const re=$('cam').classList.contains('show'),L0=cfg.lsp&&Date.now()-cfg.lsp.t<36e5?cfg.lsp:null;$('aptns').style.display='flex';if(!re){$('apt').value=spec&&L0?L0.apt:'';specLoc=spec&&L0&&L0.loc?L0.loc:'N'}if(!re)curNS='';buildMot(re)}setNS();syncSL();session=0;lowWarned=false;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');bumpIdle();
+ $('vid').srcObject=stream;setupTools();{const re=$('cam').classList.contains('show'),L0=cfg.lsp&&Date.now()-cfg.lsp.t<36e5?cfg.lsp:null;$('aptns').style.display='flex';if(!re){$('apt').value=spec&&L0?L0.apt:'';specLoc=spec&&L0&&L0.loc?L0.loc:'N'}if(!re)curNS='';buildMot(re)}setNS();syncSL();session=0;lowWarned=false;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');bumpIdle(true);
 }
 function openViewer(p0){
  const vis=[...photos.filter(p=>!p.nt),...photos.filter(p=>p.nt)];let v=document.getElementById('viewer');if(v)v.remove();
@@ -515,7 +515,7 @@ $('shut').onclick=async()=>{
 const syncSL=()=>document.querySelectorAll('#aptns [data-sl]').forEach(b=>b.classList.toggle('on',b.dataset.sl===(spec?specLoc:curNS)));document.querySelectorAll('#aptns [data-sl]').forEach(b=>b.onclick=()=>{if(spec)specLoc=b.dataset.sl;else curNS=curNS===b.dataset.sl?'':b.dataset.sl;syncSL()});
 document.querySelectorAll('#aptbar [data-ns]').forEach(b=>b.onclick=()=>{curNS=curNS===b.dataset.ns?'':b.dataset.ns;cfg.ns=curNS;save();setNS()});
 $('done').onclick=()=>{closeCam();if(spec&&specIds.length)setTimeout(specAuto,350)};
-let camIdle=null;function bumpIdle(){const l=$('idl');l.classList.remove('run');void l.offsetWidth;l.classList.add('run');clearTimeout(camIdle);camIdle=setTimeout(()=>{if($('cam').classList.contains('show')){finishCam();toast('Cámara cerrada por inactividad. Fotos guardadas')}},300000)}
+let camIdle=null;function bumpIdle(off){const l=$('idl');l.classList.remove('run');void l.offsetWidth;clearTimeout(camIdle);if(off)return;l.classList.add('run');camIdle=setTimeout(()=>{if($('cam').classList.contains('show')){finishCam();toast('Cámara cerrada por inactividad. Fotos guardadas')}},300000)}
 function finishCam(){if(!$('cam').classList.contains('show'))return;closeCam();if(spec&&specIds.length)setTimeout(specAuto,350)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)finishCam()});addEventListener('pagehide',()=>finishCam());
 async function specAuto(){const ids=specIds.slice();const recs=(await Promise.all(ids.map(id=>tx('p','readonly',s=>s.get(id))))).filter(Boolean);
