@@ -56,8 +56,14 @@ input[type=text]{width:100%;border:0;background:transparent;font-size:19px;color
 .tabs{display:flex}.tabs button{flex:1;background:none;border:0;padding:8px 0 10px;color:var(--muted);font-size:11px;cursor:pointer}
 .tabs button span{font-size:22px}.tabs button.on{color:var(--blue)}
 .tabs button{letter-spacing:.5px}
-.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-100px);background:#1c1c1e;color:#fff;padding:10px 18px;border-radius:20px;transition:transform .3s;z-index:30;font-size:15px}
-.toast.show{transform:translateX(-50%)}body:has(#cam.show) .toast{top:auto;bottom:calc(190px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(40px);opacity:0;transition:transform .3s,opacity .3s}body:has(#cam.show) .toast.show{transform:translateX(-50%);opacity:1}
+.tstack{position:fixed;left:10px;top:calc(56px + env(safe-area-inset-top));z-index:30;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:min(260px,70vw)}
+body:has(#cam.show) .tstack{top:calc(170px + env(safe-area-inset-top))}
+.tc{display:flex;align-items:center;gap:9px;background:rgba(28,28,30,.94);color:#fff;border:1px solid rgba(255,255,255,.12);border-left:4px solid #c9a24b;border-radius:14px;padding:10px 14px 10px 10px;font-size:14px;line-height:1.25;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:tin .3s ease-out}
+.tc.er{border-left-color:#e5484d}.tc.out{animation:tout .3s ease-in forwards}
+.tc i{font-style:normal;flex:none;width:22px;height:22px;border-radius:50%;background:#c9a24b;color:#1c1c1e;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.tc.er i{background:#e5484d;color:#fff}
+@keyframes tin{from{transform:translateX(-120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes tout{to{transform:translateX(-120%);opacity:0}}
 .grp{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(120,90,40,.08)}
 .grp .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
 .grp .top b{font-size:18px}.grp .top small{color:var(--muted)}
@@ -194,7 +200,7 @@ html,body{overscroll-behavior-y:contain}
 <div id="rec"><div class="bx"><div class="ic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></div><b>¿Olvidaste enviar las fotos?</b><p id="recn"></p><p id="recg" style="margin:-8px 0 16px;font-size:14px;font-weight:700;color:var(--blue)"></p><p id="recs" style="margin:-8px 0 16px"></p><button class="btn" id="recgo">Compartir ahora</button><button class="btn" id="recsp" style="background:var(--blue);margin-top:8px">Compartir especiales</button><button class="btn no" id="recno">Más tarde</button></div></div>
 <div id="mdl"><div class="bx" id="mbx"></div></div>
 <div id="dlg"><div class="bx"><b>¿Borrar esta foto?</b><p>No se puede deshacer.</p><div class="r"><button class="btn no" id="dno">Cancelar</button><button class="btn" id="dyes">Sí, borrar</button></div></div></div>
-<div class="toast" id="toast"></div>
+<div class="tstack" id="toast"></div>
 <script>
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
@@ -232,7 +238,7 @@ let specLoc='N',lowWarned=false;let curNS='';const setNS=()=>document.querySelec
 let db,photos=[],hist=[],urls={},tab='fotos',stream=null,session=0;let delMode=false;const delSel=new Set(),lpMenu=p=>{modal(`<h3>Seleccionar para borrar</h3><button class="pk" id="lp1">Seleccionar esta foto</button><button class="pk" id="lp2">Seleccionar todas</button><button class="pk" id="lp3">Cancelar</button>`,close=>{$('lp1').onclick=()=>{close();delMode=true;delSel.add(p.id);draw()};$('lp2').onclick=()=>{close();delMode=true;photos.forEach(x=>delSel.add(x.id));draw()};$('lp3').onclick=close})};try{const t=sessionStorage.getItem('tabR');if(t){tab=t;sessionStorage.removeItem('tabR')}}catch(e){}
 const open=()=>new Promise((res,rej)=>{const r=indexedDB.open('fotos',2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('p'))d.createObjectStore('p',{keyPath:'id'});if(!d.objectStoreNames.contains('h'))d.createObjectStore('h',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const tx=(st,m,f)=>new Promise((res,rej)=>{const t=db.transaction(st,m);const r=f(t.objectStore(st));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)});
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(m){const w=$('toast'),er=/No se pudo|Sin internet|Pon |Escribe|no están|no puede/i.test(m);const c=document.createElement('div');c.className='tc'+(er?' er':'');c.innerHTML='<i>'+(er?'!':'✓')+'</i><span></span>';c.lastChild.textContent=m;while(w.children.length>=3)w.firstChild.remove();w.appendChild(c);setTimeout(()=>{c.classList.add('out');setTimeout(()=>c.remove(),300)},2800)}
 const fD=ts=>new Date(ts).toLocaleDateString(LOC(),{day:'numeric',month:'short',year:'numeric'});
 const fT=ts=>new Date(ts).toLocaleTimeString(LOC(),{hour:'numeric',minute:'2-digit',hour12:true}).replace(/\s/g,' ').toUpperCase().replace('A. M.','AM').replace('P. M.','PM');
 const aptL=o=>{const a=(o&&o.apt||'').trim(),n=(o&&o.ns)||'';return a&&n?n+'-'+a:a||n||''};
