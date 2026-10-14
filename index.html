@@ -327,7 +327,6 @@ function draw(){
   <div class="opt"><span>Notificaciones</span><button class="btn" id="onot" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0"></button></div>
   <div class="opt"><span>Tema</span><button class="selb" id="otm"></button></div>
 </div>
-  <button class="btn s" id="gall"></button>
   <div class="brow"><button class="btn s" id="cpl">Copiar link</button><button class="btn s" id="inst" ${standalone()?'disabled':''}>${standalone()?'App abierta':'Instalar app'}</button></div>
   <div id="iosh" class="card" style="display:none;line-height:1.7"></div></div>`;
   const url=location.origin+location.pathname.replace(/index\.html$/,'');
@@ -340,9 +339,6 @@ function draw(){
   const nst=()=>{const b=$('onot');if(!b)return;const P=window.Notification?Notification.permission:'none';b.textContent=P==='granted'?'Activadas':P==='denied'?'Bloqueadas':P==='none'?'No disponible':'Activar';b.disabled=P!=='default';b.style.background=P==='granted'?'var(--gold)':''};nst();
   $('onot').onclick=async()=>{try{await Notification.requestPermission()}catch(e){}nst()};
   $('ocierre').onclick=cierreModal;$('oprf').onclick=()=>pickName();$('oadm').onclick=()=>adminLogin();
-  const gn=()=>photos.filter(p=>!p.g).length;const gl=()=>{$('gall').textContent=gn()?`Guardar nuevas en el carrete (${gn()})`:'Todas ya guardadas';$('gall').disabled=!gn()};gl();
-  $('gall').onclick=async()=>{const nv=photos.filter(p=>!p.g);if(!nv.length)return;const files=nv.map((p,i)=>new File([p.blob],`Receiving_${p.id}.jpg`,{type:'image/jpeg'}));
-   try{if(!(navigator.canShare&&navigator.canShare({files}))){toast('Este navegador no puede guardar así');return}await navigator.share({files});for(const p of nv){p.g=true;await tx('p','readwrite',s=>s.put(p))}gl();toast('Guardadas')}catch(e){if(e.name!=='AbortError')toast('No se pudo guardar')}};
   $('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span>✓</span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v?'v'+v:'—'}).catch(()=>{if($('over'))$('over').textContent='—'})}catch(e){if($('over'))$('over').textContent='—'}$('orns').checked=!!cfg.reqns;$('orns').onchange=e=>{cfg.reqns=e.target.checked;save()};$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};$('ovb').checked=!!cfg.vbtn;$('ovb').onchange=e=>{cfg.vbtn=e.target.checked;save()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
