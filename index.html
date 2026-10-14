@@ -479,9 +479,9 @@ async function enviar(opts){
  const base=nombre.replace(/[^\w]+/g,'_');
  const files=sel.map((p,i)=>new File([p.blob],`${base}${aptL(p)?'_'+aptL(p):''}_${i+1}.jpg`,{type:'image/jpeg'}));
  const ahora=Date.now(),en=cfg.idioma==='en',wf=en?'photo':'foto';
- let lines='';if(sel.some(p=>aptL(p)||ntEN(p))){const g=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]={p,n:0};g.push(gm[k])}gm[k].n++});lines='\n'+g.map(x=>{const t=towerN(x.p.ns),a=(x.p.apt||'').trim();const lb=(t||a)?`${t?t+' ':''}${a?'Apt '+a:''}`.trim():(en?'No apt':'Sin apt');const nn=ntEN(x.p);return`${lb}: ${x.n} ${wf}${x.n>1?'s':''}${nn?' — '+nn:''}`}).join('\n')}
+ let lines='';if(sel.some(p=>aptL(p)||ntEN(p))){const g=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]={p,n:0};g.push(gm[k])}gm[k].n++});lines='\n'+g.map(x=>{const t=sp?(x.p.ns==='N'?'North':x.p.ns==='S'?'South':''):towerN(x.p.ns),a=(x.p.apt||'').trim();const lb=(t||a)?`${t?t+' ':''}${a?'Apt '+a:''}`.trim():(en?'No apt':'Sin apt');const nn=ntEN(x.p);if(sp)return nn?`${lb} — ${nn}`:lb;return`${lb}: ${x.n} ${wf}${x.n>1?'s':''}${nn?' — '+nn:''}`}).join('\n')}
  const by=nombre!==yo?(en?` (sent by ${yo})`:` (enviado por ${yo})`):'';
- const data={files,text:`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
+ const data={files,text:sp?lines.trim():`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
  try{
   if(navigator.canShare&&navigator.canShare({files}))await navigator.share(data);
   else{if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'Este navegador no puede enviar fotos directo')}if(!auto){if(lk)window.open(lk,'_blank');else window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');toast('Este navegador no envía fotos directo')}return'error'}
