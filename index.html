@@ -57,7 +57,7 @@ input[type=text]{width:100%;border:0;background:transparent;font-size:19px;color
 .grp .top b{font-size:18px}.grp .top small{color:var(--muted)}
 .strip{display:flex;gap:6px;overflow-x:auto}.strip img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex:none}
 .opt{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.opt:last-child{border:0}
-select{font-size:16px;border:0;background:var(--bg);color:var(--text);padding:8px 10px;border-radius:10px}
+select,.selb{font-size:16px;border:0;background:var(--bg);color:var(--text);padding:8px 10px;border-radius:10px}
 .sw{position:relative;width:51px;height:31px;flex:none}.sw input{display:none}
 .sw i{position:absolute;inset:0;background:#c7c7cc;border-radius:16px;transition:.2s}
 .sw i:after{content:"";position:absolute;left:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:.2s}
@@ -81,7 +81,7 @@ select{font-size:16px;border:0;background:var(--bg);color:var(--text);padding:8p
 input[type=file]{display:none}
 .logo{display:block;max-width:230px;max-height:110px;margin:22px auto -6px;object-fit:contain}
 .logo+h1{margin-top:12px}
-.ops .opt,#mbx .opt{padding:8px 0;font-size:15px}.ops .opt small,#mbx .opt small{font-size:12px}.ops .sw,#mbx .sw{transform:scale(.82);transform-origin:right center;margin-left:-6px}.ops select,#mbx select{font-size:14px;padding:6px 8px}.ops .card{padding:8px 14px;margin-bottom:10px}.ops .btn.s,#mbx .btn.s{padding:11px;font-size:15px;border-radius:13px;margin-bottom:8px}.brow{display:flex;gap:8px}.brow .btn{flex:1}
+.ops .opt,#mbx .opt{padding:8px 0;font-size:15px}.ops .opt small,#mbx .opt small{font-size:12px}.ops .sw,#mbx .sw{transform:scale(.82);transform-origin:right center;margin-left:-6px}.ops select,#mbx select,.ops .selb{font-size:14px;padding:6px 10px}.selb{border:0;background:var(--bg);color:var(--text);border-radius:10px;font-weight:600}.ops .card{padding:8px 14px;margin-bottom:10px}.ops .btn.s,#mbx .btn.s{padding:11px;font-size:15px;border-radius:13px;margin-bottom:8px}.brow{display:flex;gap:8px}.brow .btn{flex:1}
 .pin{display:flex;gap:10px;justify-content:center;margin:6px 0 14px}.pin input{width:52px;height:60px;text-align:center;font-size:26px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--text);outline:none;padding:0}.pin input:focus{border-color:var(--blue)}.pin.bad{animation:shk .35s}.pin.bad input{border-color:var(--red)}@keyframes shk{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .opt input[type=text]{text-align:right;width:55%;font-size:16px}
 #dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
@@ -211,7 +211,7 @@ const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const CLK='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>';let hTab='pend';const hF={q:'',d:''};const dKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};const sTxt=(ts,por,lb)=>(por||'')+' '+(lb||'')+' '+(lb&&/^[NS]/.test(lb)?(lb[0]==='N'?'north norte':'south sur'):'')+' '+new Date(ts).toLocaleDateString(LOC(),{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' '+fT(ts);
 let curNS='';const setNS=()=>document.querySelectorAll('#aptbar [data-ns]').forEach(b=>b.classList.toggle('on',b.dataset.ns===curNS));
-let db,photos=[],hist=[],urls={},tab='fotos',stream=null,session=0;
+let db,photos=[],hist=[],urls={},tab='fotos',stream=null,session=0;try{const t=sessionStorage.getItem('tabR');if(t){tab=t;sessionStorage.removeItem('tabR')}}catch(e){}
 const open=()=>new Promise((res,rej)=>{const r=indexedDB.open('fotos',2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('p'))d.createObjectStore('p',{keyPath:'id'});if(!d.objectStoreNames.contains('h'))d.createObjectStore('h',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const tx=(st,m,f)=>new Promise((res,rej)=>{const t=db.transaction(st,m);const r=f(t.objectStore(st));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)});
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -282,13 +282,13 @@ function draw(){
   <div class="opt"><span>Cierre del día</span><button class="btn" id="ocierre" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0">Ver</button></div>
   <div class="opt"><span>Perfil</span><button class="btn" id="oprf" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0">${cfg.nombre?esc(cfg.nombre):'Elegir'}</button></div>
   <div class="opt"><span>Administrador</span><button class="btn" id="oadm" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0;background:var(--gold)">Entrar</button></div>
-  <div class="opt"><span>Cámara</span><select id="o2"><option value="environment">Trasera</option><option value="user">Frontal</option></select></div>
+  <div class="opt"><span>Cámara</span><button class="selb" id="o2"></button></div>
   <div class="opt"><span>Vibrar al tomar foto</span><label class="sw"><input type="checkbox" id="o3"><i></i></label></div>
   <div class="opt"><span>Editar y borrar desde el visor de fotos</span><label class="sw"><input type="checkbox" id="ovb"><i></i></label></div>
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido':'Normal'}</span></div>
-  <div class="opt"><span>Idioma / Language</span><select id="oid"><option value="en">English</option><option value="es">Español</option></select></div>
+  <div class="opt"><span>Idioma / Language</span><button class="selb" id="oid"></button></div>
   <div class="opt"><span>Notificaciones</span><button class="btn" id="onot" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0"></button></div>
-  <div class="opt"><span>Tema</span><select id="otm"><option value="claro">Claro</option><option value="oscuro">Oscuro</option><option value="auto">Automático</option></select></div>
+  <div class="opt"><span>Tema</span><button class="selb" id="otm"></button></div>
 </div>
   <button class="btn s" id="gall"></button>
   <div class="brow"><button class="btn s" id="cpl">Copiar link</button><button class="btn s" id="inst" ${standalone()?'disabled':''}>${standalone()?'App abierta':'Instalar app'}</button></div>
@@ -306,8 +306,8 @@ function draw(){
   const gn=()=>photos.filter(p=>!p.g).length;const gl=()=>{$('gall').textContent=gn()?`Guardar nuevas en el carrete (${gn()})`:'Todas ya guardadas';$('gall').disabled=!gn()};gl();
   $('gall').onclick=async()=>{const nv=photos.filter(p=>!p.g);if(!nv.length)return;const files=nv.map((p,i)=>new File([p.blob],`Receiving_${p.id}.jpg`,{type:'image/jpeg'}));
    try{if(!(navigator.canShare&&navigator.canShare({files}))){toast('Este navegador no puede guardar así');return}await navigator.share({files});for(const p of nv){p.g=true;await tx('p','readwrite',s=>s.put(p))}gl();toast('Guardadas')}catch(e){if(e.name!=='AbortError')toast('No se pudo guardar')}};
-  $('oid').value=cfg.idioma;$('oid').onchange=e=>{cfg.idioma=e.target.value;save();location.reload()};$('o2').value=cfg.camara;$('o3').checked=cfg.vibrar;$('ovb').checked=!!cfg.vbtn;$('ovb').onchange=e=>{cfg.vbtn=e.target.checked;save()};$('otm').value=cfg.tema;$('otm').onchange=e=>{cfg.tema=e.target.value;save();aplTema()};
-  $('o2').onchange=e=>{cfg.camara=e.target.value;save()};$('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
+  $('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span>✓</span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;$('ovb').checked=!!cfg.vbtn;$('ovb').onchange=e=>{cfg.vbtn=e.target.checked;save()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
+  $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
 }
 function editApt(p){let ns=p.ns||'',nt=p.nt||'',loc=p.loc||'N';const others=photos.filter(x=>x.on&&x.id!==p.id).length,multi=p.on&&others>0;
@@ -318,6 +318,14 @@ function editApt(p){let ns=p.ns||'',nt=p.nt||'',loc=p.loc||'N';const others=phot
   document.querySelectorAll('#mbx [data-lc]').forEach(b=>b.onclick=()=>{loc=b.dataset.lc;sync()});
   const go=async all=>{const a=($('eapt').value||'').trim().toUpperCase(),tx2=($('entx').value||'').trim();if(nt&&!a){toast('Pon el apartamento para la nota');$('eapt').focus();return}if(nt==='cu'&&!tx2){toast('Escribe la nota');$('entx').focus();return}const list=all?photos.filter(x=>x.on||x.id===p.id):[p];for(const q of list){q.apt=a;q.ns=ns;q.nt=nt;q.ntx=nt==='cu'?tx2:'';q.loc=nt?loc:'';await tx('p','readwrite',s=>s.put(q))}close();draw()};
   $('esv').onclick=()=>go(false);if($('esa'))$('esa').onclick=()=>go(true);setTimeout(()=>$('eapt').focus(),150)})}
+function pickOpt(id,title,opts,get,set){const b=$(id),lb=()=>{b.textContent=(opts.find(o=>o[0]===get())||opts[0])[1]};lb();
+ b.onclick=()=>modal(`<h3>${title}</h3>${opts.map(o=>`<button class="pk${get()===o[0]?' on':''}" data-v="${o[0]}">${o[1]}${get()===o[0]?'<span>✓</span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-v]').forEach(x=>x.onclick=()=>{set(x.dataset.v);lb();close()}))}
+function cierreModal(){
+ const g=new Map();photos.forEach(p=>{const k=aptL(p);g.set(k,(g.get(k)||0)+1)});
+ const hoy=dKey(Date.now()),sent=hist.filter(h=>!h.estado&&dKey(h.id)===hoy).reduce((a,h)=>a+h.n,0);
+ const n=photos.length,q=photos.filter(p=>p.q).length;
+ modal(`<h3>Cierre del día</h3>${n?`<p class="ptot" style="color:var(--blue);font-weight:700">${n} foto${n>1?'s':''} sin enviar</p>${[...g.entries()].sort((a,b)=>b[1]-a[1]).map(([k,c])=>`<div class="prow"><div class="pt"><span>${k?esc(k):'Sin apt'}</span><b>${c}</b></div></div>`).join('')}${q?`<p class="pnote">${q} en cola</p>`:''}`:'<p class="ptot" style="font-size:16px">Todo enviado. No queda nada pendiente.</p>'}<div class="pt" style="margin-top:12px"><span>Enviadas hoy</span><b>${sent}</b></div>${n?'<button class="btn s" id="cgo" style="margin-top:14px">Compartir ahora</button>':''}<button class="btn s red" id="cno" style="margin-top:8px">Cerrar</button>`,close=>{
+  $('cno').onclick=close;if($('cgo'))$('cgo').onclick=()=>{close();photos.forEach(p=>{p.on=true});Promise.all(photos.map(p=>tx('p','readwrite',s=>s.put(p)))).then(()=>enviar())}})}
 function pedirNum(fn,t,sub){const k=1+Math.floor(Math.random()*5),d=$('dlg');pedir(fn,t,sub,'Sí, borrar');
  let w=$('dnumw');if(!w){w=document.createElement('div');w.id='dnumw';w.innerHTML='<p id="dnumt"></p><input id="dnum" type="text" inputmode="numeric" maxlength="1" autocomplete="off">';d.querySelector('p').after(w)}
  w.style.display='';$('dnumt').textContent='Escribe el número '+k+' para confirmar';$('dnum').value='';const y=$('dyes');y.disabled=true;
