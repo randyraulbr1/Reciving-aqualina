@@ -416,7 +416,7 @@ function calModal(done){
  modal('',close=>draw(close))}
 
 function perfModal(tabSel){
- const per=tabSel||'dia';
+ const per=typeof tabSel==='string'?tabSel:'dia';
  const now=new Date(),d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
  const wd=(now.getDay()+6)%7,w0=d0-wd*864e5,m0=new Date(now.getFullYear(),now.getMonth(),1).getTime();
  const from={dia:d0,sem:w0,mes:m0,tot:0}[per];
