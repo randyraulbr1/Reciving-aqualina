@@ -1,5 +1,5 @@
 {
- "v": 6,
+ "v": 7,
  "empleados": [
   "Alejando",
   "Cristian",
@@ -66,7 +66,8 @@
    "SB|2204": "(Dejar los paquetes en el servicio)",
    "SB|3203": "(Dejar los paquetes en el servicio)",
    "SB|3407": "",
-   "SB|2304": ""
+   "SB|2304": "",
+   "SA|1405": ""
   },
   "aplock": {
    "N|2701": 1
