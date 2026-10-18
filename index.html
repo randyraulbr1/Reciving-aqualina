@@ -191,7 +191,7 @@ html,body{overscroll-behavior-y:contain}
 #ctop button{width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:15px;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center}
 #ctop button.on{background:var(--gold);color:#0a0a0a}
 #ctools{bottom:calc(138px + env(safe-area-inset-bottom))}
-#aptbar{top:auto;right:auto;left:12px;right:12px;margin:0 auto;bottom:calc(142px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);z-index:7}#aptbar input#apt{width:clamp(80px,26vw,118px)}
+#aptbar{top:auto;right:auto;left:12px;right:12px;margin:0 auto;bottom:138px;max-width:calc(100% - 24px);z-index:7}#aptbar input#apt{width:clamp(80px,26vw,118px)}
 #aptbar{justify-content:center}#aptbar #motbar,#aptbar #motx{order:-1;justify-content:center}
 #aptbar input#apt{cursor:pointer;caret-color:transparent}#aptbar input#apt.act{outline:2px solid var(--red,#c8102e)}
 #morb{top:calc(66px + env(safe-area-inset-top));bottom:auto;right:12px}
@@ -551,7 +551,7 @@ function closeCam(){clearTimeout(lateT);try{applyLate().catch(()=>{})}catch(e){}
 function thHold(th,id){let tm=null,sx=0,sy=0;const cl=()=>{clearTimeout(tm);tm=null};
  th.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;tm=setTimeout(()=>{tm=null;try{navigator.vibrate&&navigator.vibrate(25)}catch(x){}
   pedir(async()=>{try{const q=await tx('p','readonly',s=>s.get(id));if(q){try{await toBin([q])}catch(e){}await tx('p','readwrite',s=>s.delete(id))}}catch(e){toast('No se pudo eliminar');return}
-   th.remove();[...document.querySelectorAll('#strip .th span')].forEach((x,i)=>x.textContent=i+1);session=document.querySelectorAll('#strip .th').length;$('count').textContent=session;specIds=specIds.filter(x=>x!==id);await load();toast('Foto eliminada')},'¿Eliminar esta foto?','Se guarda 7 días en la papelera.','Sí, eliminar')},500)});
+   th.remove();[...document.querySelectorAll('#strip .th span')].forEach((x,i)=>x.textContent=i+1);session=document.querySelectorAll('#strip .th').length;$('count').textContent=session;if(!session)bumpIdle(true);specIds=specIds.filter(x=>x!==id);await load();toast('Foto eliminada')},'¿Eliminar esta foto?','Se guarda 7 días en la papelera.','Sí, eliminar')},500)});
  ['pointerup','pointerleave','pointercancel'].forEach(ev=>th.addEventListener(ev,cl));th.addEventListener('pointermove',e=>{if(tm&&(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10))cl()});th.addEventListener('contextmenu',e=>e.preventDefault())}
 $('shut').onclick=async()=>{
  const v=$('vid');if(!v.videoWidth)return;
