@@ -609,7 +609,7 @@ function camWatch(n){clearTimeout(camWt);camWt=setTimeout(async()=>{if(!$('cam')
  camWatch(n+1)},n?2500:2000)}
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='vid'){const v=e.target;if(!(v.videoWidth>0&&!v.paused))camWatch(0)}});
 async function openCam(){
- if(!(cfg.nombre||'').trim()){toast('Elige tu nombre primero');pickName(()=>openCam());return}
+ if(!(cfg.nombre||'').trim()){toast('Elige tu nombre primero');pickName();return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('fcam').click();return}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cfg.camara},width:{ideal:2560},height:{ideal:1440}},audio:false});}
  catch(e){toast('Sin permiso de cámara');$('fcam').click();return}
