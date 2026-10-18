@@ -1,5 +1,5 @@
 {
- "v": 3,
+ "v": 4,
  "empleados": [
   "Alejando",
   "Cristian",
@@ -64,7 +64,8 @@
    "N|PH52": "",
    "SB|PH2": "Es el piso 48",
    "SB|2204": "(Dejar los paquetes en el servicio)",
-   "SB|3203": "(Dejar los paquetes en el servicio)"
+   "SB|3203": "(Dejar los paquetes en el servicio)",
+   "SB|3407": ""
   },
   "aplock": {
    "N|2701": 1
