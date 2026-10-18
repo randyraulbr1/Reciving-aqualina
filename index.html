@@ -210,6 +210,8 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 #kpad button,#gkp button{-webkit-tap-highlight-color:transparent;transition:none}#kpad,#gkp{-webkit-touch-callout:none}
 .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:46vh;overflow-y:auto}.apb{height:48px;border:0;border-radius:14px;background:var(--bg);color:var(--text);font-size:18px;font-weight:700;box-shadow:inset 0 0 0 1px var(--line)}.apb.lk{box-shadow:inset 0 0 0 2px var(--gold)}.apb:active{background:var(--line)}
 .pdot{-webkit-text-security:disc;text-security:disc}
+#recbar{--rw:min(calc(100vw - 24px),328px);flex-wrap:nowrap;justify-content:flex-start;width:fit-content;max-width:var(--rw);margin:0 auto;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}#recbar::-webkit-scrollbar{display:none}
+#recbar button{flex:0 0 calc((var(--rw) - 16px)/3);width:calc((var(--rw) - 16px)/3);scroll-snap-align:start;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style></head><body>
 <div id="splash"><h2 id="sptit"><span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>R</span>eceiving</h2><div class="spin"></div></div>
 <div id="ptr"><i></i></div>
@@ -304,7 +306,7 @@ function warnBar(){let h='';
 try{if('Notification' in window&&Notification.permission==='default'&&(navigator.standalone||matchMedia('(display-mode: standalone)').matches)){const ask=()=>{document.removeEventListener('click',ask,true);try{Notification.requestPermission().then(()=>badge())}catch(e){}};document.addEventListener('click',ask,true)}}catch(e){}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')badge()});
 document.addEventListener('error',async e=>{const im=e.target;if(!im||im.tagName!=='IMG'||im.dataset.rt)return;im.dataset.rt='1';try{const id=Object.keys(urls).find(k=>urls[k]===im.src);const p=photos.find(x=>String(x.id)===id);if(!p)return;const b=new Blob([await p.blob.arrayBuffer()],{type:p.blob.type||'image/jpeg'});URL.revokeObjectURL(urls[id]);urls[id]=URL.createObjectURL(b);im.src=urls[id]}catch(x){}},true);
-const recK=()=>spec?'recp':'rec',recSave=(a,sd)=>{if(!a)return;const k=recK();let l=(cfg[k]||[]).filter(x=>!(x.a===a&&x.s===sd));l.unshift({a,s:sd||''});cfg[k]=l.slice(0,3);save()};
+const recK=()=>spec?'recp':'rec',recSave=(a,sd)=>{if(!a)return;const k=recK();let l=(cfg[k]||[]).filter(x=>!(x.a===a&&x.s===sd));l.unshift({a,s:sd||''});cfg[k]=l.slice(0,10);save()};
 function recPos(){}
 function recDraw(){const bx=$('recbar');if(!bx)return;recPos();setTimeout(recPos,300);const l=cfg[recK()]||[];setTimeout(layoutCam,0);bx.innerHTML=l.map((x,i)=>`<button data-ri="${i}">${esc(x.a)}${x.s?'-'+x.s:''}</button>`).join('');bx.querySelectorAll('button').forEach(b=>b.onclick=()=>{const x=l[+b.dataset.ri];if(!x)return;applyAptSel(x.a,x.s)})}
 
