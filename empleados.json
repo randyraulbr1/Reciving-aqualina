@@ -1,5 +1,5 @@
 {
- "v": 8,
+ "v": 9,
  "empleados": [
   "Alejando",
   "Cristian",
@@ -74,5 +74,8 @@
    "N|2701": 1
   },
   "apen": {}
+ },
+ "pins": {
+  "Randy": "vi0gqkzov02w"
  }
 }
