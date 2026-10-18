@@ -437,6 +437,7 @@ function draw(){
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido':'Normal'}</span></div>
   <div class="opt"><span>Versión de la app</span><span id="over" style="color:var(--muted);font-size:14px">...</span></div>
   <div class="opt"><span>Idioma / Language</span><button class="selb" id="oid"></button></div>
+  <div class="opt"><span>Clave de mi perfil<br><small style="color:var(--muted)">Opcional: 4 números para que nadie use tu nombre</small></span><button class="selb" id="opin"></button></div>
   <div class="opt"><span>Notificaciones</span><button class="btn" id="onot" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0"></button></div>
   <div class="opt"><span>Tema</span><button class="selb" id="otm"></button></div>
 </div>
@@ -452,7 +453,7 @@ function draw(){
   const nst=()=>{const b=$('onot');if(!b)return;const P=window.Notification?Notification.permission:'none';b.textContent=P==='granted'?'Activadas':P==='denied'?'Bloqueadas':P==='none'?'No disponible':'Activar';b.disabled=P!=='default';b.style.background=P==='granted'?'var(--gold)':''};nst();
   $('onot').onclick=async()=>{try{await Notification.requestPermission()}catch(e){}nst()};
   $('ocierre').onclick=cierreModal;$('oprf').onclick=()=>pickName();$('oadm').onclick=()=>adminLogin();
-  $('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v?'v'+v:'—'}).catch(()=>{if($('over'))$('over').textContent='—'})}catch(e){if($('over'))$('over').textContent='—'}if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
+  $('opin').textContent=(cfg.pins||{})[cfg.nombre]?'Activa':'Sin clave';$('opin').onclick=()=>profPin();$('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v?'v'+v:'—'}).catch(()=>{if($('over'))$('over').textContent='—'})}catch(e){if($('over'))$('over').textContent='—'}if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
 }
@@ -494,12 +495,30 @@ function ayerCheck(){
   $('ayno').onclick=close;if($('ay0'))$('ay0').onclick=()=>{close();enviar({only:mine.map(p=>p.id)})};
   document.querySelectorAll('#mbx [data-ay]').forEach(b=>b.onclick=()=>{const [k,l]=oth[+b.dataset.ay];close();enviar({owner:k,only:l.map(p=>p.id)})})})}
 const capOf=(p,ed)=>`<div class="cap"><b>${esc(p.por||'Sin nombre')}</b>${ed?`<button class="apc${aptL(p)?' set':''}">${aptL(p)?esc(aptL(p)):'+ Apt'}</button><br>`:(aptL(p)?`<span class="ap">${esc(aptL(p))}</span><br>`:'')}${p.nt?`<span class="ap" style="background:var(--orange,#f59e0b)">${esc((NT_.find(x=>x[0]===p.nt)||[])[1]||'')}</span><br>`:''}${fD(p.ts||Math.floor(p.id))}<br>${fT(p.ts||Math.floor(p.id))}</div>`;
+const pinH=(n,c)=>{let h=5381,t='rcv|'+n+'|'+c;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))>>>0;let g=7;for(let i=0;i<t.length;i++)g=(Math.imul(g,31)+t.charCodeAt(i))>>>0;return h.toString(36)+g.toString(36)};
+function pinBox(t,sub,cb,forgot){
+ modal(`<h3>${t}</h3><p style="text-align:center;color:var(--muted);margin:0 0 12px;font-size:14px">${sub}</p><div class="pin" id="pin">${[0,1,2,3].map(i=>`<input type="text" class="pdot" inputmode="numeric" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" data-i="${i}">`).join('')}</div>${forgot?'<button class="pk" id="pfg" style="margin-top:12px">Olvidé mi clave</button>':''}`,close=>{
+  const bx=[...document.querySelectorAll('#pin input')];let done=false;
+  const bad=()=>{const p=$('pin');p.classList.add('bad');try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}setTimeout(()=>{p.classList.remove('bad');bx.forEach(x=>x.value='');bx[0].focus();done=false},400)};
+  const go=()=>{const v=bx.map(x=>x.value).join('');if(v.length<4||done)return;done=true;cb(v,close,bad)};
+  bx.forEach((b,i)=>{b.oninput=()=>{b.value=b.value.replace(/\D/g,'').slice(-1);if(b.value&&i<3)bx[i+1].focus();go()};b.onkeydown=e=>{if(e.key==='Backspace'&&!b.value&&i>0){bx[i-1].value='';bx[i-1].focus()}}});
+  if($('pfg'))$('pfg').onclick=forgot;
+  setTimeout(()=>bx[0].focus(),150)})}
+function pinCheck(n,after){const h=(cfg.pins||{})[n];if(!h){after();return}
+ pinBox('Clave de '+esc(n),'Escribe tu clave de 4 números',(v,close,bad)=>{if(pinH(n,v)===h){close();after()}else bad()},()=>adminLogin(()=>{delete cfg.pins[n];save();toast('Clave quitada');after()}))}
+function profPin(){const n=cfg.nombre;if(!n){toast('Elige tu nombre primero');return}
+ const sync=()=>{if($('opin'))$('opin').textContent=(cfg.pins||{})[n]?'Activa':'Sin clave'};
+ const crear=()=>pinBox('Crea tu clave','4 números nuevos para '+esc(n),(a,close)=>{pinBox('Repite la clave','Escríbela otra vez para confirmar',(b,close2,bad)=>{if(a===b){cfg.pins=cfg.pins||{};cfg.pins[n]=pinH(n,a);save();close2();sync();toast('Clave guardada')}else{toast('No coinciden, empieza otra vez');close2();setTimeout(crear,250)}})});
+ if(!(cfg.pins||{})[n]){crear();return}
+ modal(`<h3>Clave de mi perfil</h3><button class="pk" id="pch">Cambiar clave</button><button class="pk" id="pqt" style="color:var(--red)">Quitar clave</button>`,close=>{
+  $('pch').onclick=()=>{close();pinBox('Clave actual','Escribe tu clave de 4 números',(v,c2,bad)=>{if(pinH(n,v)===cfg.pins[n]){c2();crear()}else bad()})};
+  $('pqt').onclick=()=>{close();pinBox('Clave actual','Escribe tu clave para quitarla',(v,c2,bad)=>{if(pinH(n,v)===cfg.pins[n]){delete cfg.pins[n];save();c2();sync();toast('Clave quitada')}else bad()})}})}
 function pickName(cb){
  bajaLista().then(c=>{if(c&&document.querySelector('#mbx .pk'))pickName(cb)});
  const l=[...cfg.empleados].sort((a,b)=>(b===cfg.nombre)-(a===cfg.nombre));
  modal(`<h3>¿Quién eres?</h3>${l.length?l.map((n,i)=>`<button class="pk${n===cfg.nombre?' on':''}" data-i="${i}">${esc(n)}${n===cfg.nombre?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join(''):'<p style="text-align:center;color:var(--muted)">Todavía no hay nombres.<br>Pide al administrador que los agregue en Opciones.</p>'}${cfg.nombre?'<button class="pk" id="qnm" style="color:var(--red)">Quitar nombre</button>':''}`,close=>{
   if($('qnm'))$('qnm').onclick=()=>{cfg.nombre='';cfg.nombreTs=Date.now();save();close();draw();toast('Nombre quitado')};
-  document.querySelectorAll('#mbx .pk:not(#qnm)').forEach(b=>b.onclick=()=>{setName(l[+b.dataset.i]);close();toast('Hola, '+l[+b.dataset.i]);if(typeof cb==='function')setTimeout(cb,150)})})}
+  document.querySelectorAll('#mbx .pk:not(#qnm)').forEach(b=>b.onclick=()=>{const n=l[+b.dataset.i],go=()=>{setName(n);close();toast('Hola, '+n);if(typeof cb==='function')setTimeout(cb,150)};if(n!==cfg.nombre&&(cfg.pins||{})[n])pinCheck(n,go);else go()})})}
 
 function calModal(done){
  const dias=new Set();hist.forEach(h=>{dias.add(dKey(h.id));(h.info||[]).forEach(f=>dias.add(dKey(f.ts)))});photos.forEach(p=>dias.add(dKey(p.ts||p.id)));
