@@ -764,6 +764,17 @@ const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+'
 const recOpen=()=>$('rec').classList.contains('show');
 let ac=null;function beep(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();[0,.28,.56].forEach((d,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=i==2?1046:784;o.connect(g);g.connect(ac.destination);const t=ac.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.24);o.start(t);o.stop(t+.26)})}catch(e){}}
 addEventListener('pointerdown',()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}},{once:true,passive:true});
+let ringT=null,ringG=null;
+function ringOff(){clearTimeout(ringT);ringT=null;try{if(ringG){ringG.gain.cancelScheduledValues(0);ringG.gain.value=0;ringG.disconnect();ringG=null}}catch(e){}try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}}
+function ringOn(){ringOff();
+ const burst=()=>{if(!recOpen()){ringOff();return}
+  const N=5,cyc=2.6;
+  if(cfg.sonido!==false){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const g=ac.createGain();g.gain.value=.5;g.connect(ac.destination);ringG=g;const t0=ac.currentTime+.05;
+   for(let c=0;c<N;c++)[[0,.45],[.65,1.1]].forEach(([a,b])=>[440,480].forEach(f=>{const o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.value=f;o.connect(e);e.connect(g);const s0=t0+c*cyc+a,s1=t0+c*cyc+b;e.gain.setValueAtTime(0,s0);e.gain.linearRampToValueAtTime(.4,s0+.03);e.gain.setValueAtTime(.4,s1-.04);e.gain.linearRampToValueAtTime(0,s1);o.start(s0);o.stop(s1+.02)}))}catch(e){}}
+  if(cfg.vibrar!==false){try{const p=[];for(let c=0;c<N;c++)p.push(450,200,450,1500);navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+  ringT=setTimeout(burst,N*cyc*1000+30000)};
+ burst()}
+(function(){try{new MutationObserver(()=>{if(ringT&&!recOpen())ringOff()}).observe($('rec'),{attributes:true,attributeFilter:['class']})}catch(e){}})();
 function recordar(){
  const on=photos.filter(p=>p.on),nm=on.filter(p=>!p.nt),sp=on.filter(p=>p.nt);if(!on.length||recOpen())return;
  const lv=l=>{const mins=Math.floor(Math.max(...l.map(p=>Date.now()-(p.ts||Math.floor(p.id))))/60000);return mins>=60?Math.floor(mins/60)+' h '+(mins%60)+' min':mins+' min'};
@@ -774,7 +785,7 @@ function recordar(){
  $('recs').textContent=m?`Hay ${m} foto${m>1?'s':''} especial${m>1?'es':''} sin enviar. La más vieja lleva ${lv(sp)}.`:'';$('recs').style.display=m?'':'none';$('recsp').style.display=m?'':'none';
  lastRem=Date.now();try{localStorage.setItem('lrem',String(lastRem))}catch(e){}
  $('rec').classList.add('show');
- try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}if(cfg.sonido!==false)beep();
+ ringOn();
  try{if(document.hidden&&window.Notification&&Notification.permission==='granted'){const o={body:trs('¿Olvidaste enviar las fotos?')+' '+(n+m),tag:'rec',renotify:true,requireInteraction:true,vibrate:[400,150,400,150,400],icon:'icon-192.png'};navigator.serviceWorker&&navigator.serviceWorker.ready?navigator.serviceWorker.ready.then(r=>r.showNotification('Receiving',o)).catch(()=>{try{new Notification('Receiving',o)}catch(e){}}):new Notification('Receiving',o)}}catch(e){}
 }
 $('recsp').onclick=()=>{$('rec').classList.remove('show');enviar({sp:true})};
