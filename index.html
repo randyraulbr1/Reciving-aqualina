@@ -593,6 +593,7 @@ const admOpts=()=>`<div class="card" style="margin:0 0 14px"><label class="t">Aj
   <div class="opt"><span>Fecha, hora y nombre en la foto</span><label class="sw"><input type="checkbox" id="o7"><i></i></label></div>
   <div class="opt"><span>Recordatorio de enviar (15 min)<br><small style="color:var(--muted)">Si olvidas enviar, sale un aviso al centro</small></span><label class="sw"><input type="checkbox" id="o9"><i></i></label></div>
   <div class="opt"><span>Fecha y hora en el mensaje de WhatsApp</span><label class="sw"><input type="checkbox" id="oa2"><i></i></label></div>
+  <div class="opt"><span>Ofrecer enviar la lista aparte<br><small style="color:var(--muted)">Después de compartir, por si WhatsApp no muestra el texto</small></span><label class="sw"><input type="checkbox" id="otxs"><i></i></label></div>
   <div class="opt"><span>Pedir N o S y apartamento<br><small style="color:var(--muted)">Obligatorios para tirar cada foto normal</small></span><label class="sw"><input type="checkbox" id="orns"><i></i></label></div>
 </div>`;
 function wireAdm(){
@@ -601,6 +602,7 @@ function wireAdm(){
   $('lg').onclick=()=>$('flogo').click();if($('lgx'))$('lgx').onclick=()=>{delete cfg.logo;save();draw()};
   $('o1').value=cfg.calidad;$('o1').onchange=e=>{cfg.calidad=+e.target.value;save()};
   $('oa2').checked=cfg.msgf;$('oa2').onchange=e=>{cfg.msgf=e.target.checked;save()};
+  $('otxs').checked=cfg.txtSep!==false;$('otxs').onchange=e=>{cfg.txtSep=e.target.checked;save()};
   $('orns').checked=!!cfg.reqns;$('orns').onchange=e=>{cfg.reqns=e.target.checked;save()};
   $('o9').checked=cfg.autoenv;$('o9').onchange=e=>{cfg.autoenv=e.target.checked;save()};
   
@@ -728,6 +730,9 @@ function netBar(){
 async function logErr(nombre,sel,motivo){const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),estado:'error',motivo}));await load()}
 const grupoOk=()=>/^https?:\/\//i.test((cfg.wlink||'').trim());
 let lastRem=+(()=>{try{return localStorage.getItem('lrem')}catch(e){return 0}})()||0;let nextTry=0,blocked=false,trying=false,lastErr=0;
+function txtAparte(t){if(!t||cfg.txtSep===false)return;
+ setTimeout(()=>modal(`<h3>Lista de las fotos</h3><p style="text-align:center;color:var(--muted);margin:0 0 12px;font-size:14px">Si WhatsApp no mostró el texto con las fotos, envíalo aquí al mismo chat.</p><div class="pk" style="display:block;white-space:pre-wrap;font-size:15px;margin-bottom:12px">${esc(t)}</div><button class="btn s" id="tsx1" style="margin-bottom:10px">Enviar la lista</button><button class="pk" id="tsx2" style="justify-content:center">Ya salió</button>`,close=>{
+  $('tsx2').onclick=close;$('tsx1').onclick=async()=>{try{if(navigator.share){await navigator.share({text:t});close();return}}catch(e){if(e&&e.name==='AbortError')return}try{await navigator.clipboard.writeText(t);toast('Lista copiada, pégala en el chat')}catch(e){toast('Mantén presionado el texto para copiarlo')}}}),700)}
 async function enviar(opts){
  const auto=!!(opts&&opts.auto);
  let sp=!!(opts&&opts.sp),lk;
@@ -753,14 +758,14 @@ async function enviar(opts){
   if(navigator.canShare&&navigator.canShare({files}))await navigator.share(data);
   else{if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'Este navegador no puede enviar fotos directo')}if(!auto){if(lk)window.open(lk,'_blank');else window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');toast('Este navegador no envía fotos directo')}return'error'}
  }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto||Date.now()-lastErr>600000){lastErr=Date.now();await logErr(nombre,sel,'No se pudo compartir: '+(e.message||e.name))}if(!auto){toast('No se pudo compartir ('+(e.name||'error')+')');if(!again&&sel.length>8)setTimeout(()=>pedir(()=>enviar({only:sel.slice(0,8).map(p=>p.id)}),'No se pudieron enviar todas juntas','Prueba enviando las primeras 8 y luego toca Compartir otra vez.','Enviar 8'),400)}return'error'}
- if(again){toast('Enviado');return'ok'}
+ if(again){toast('Enviado');if(!auto)txtAparte(data.text);return'ok'}
  cfg.lns=null;cfg.ns='';curNS='';save();
  busy(true,'Guardando envío…');
  const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));
  await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sel.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));
  for(const p of sel){await tx('p','readwrite',s=>s.delete(p.id));URL.revokeObjectURL(urls[p.id]);delete urls[p.id]}
  cfg.lns=null;cfg.ns='';curNS='';save();
- await load();busy(false);blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');toast('Enviado. Lista vacía');
+ await load();busy(false);blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');toast('Enviado. Lista vacía');if(!auto)txtAparte(data.text);
  return'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
