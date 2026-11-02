@@ -764,9 +764,17 @@ async function enviar(opts){
  try{
   if(cfg.pendFotos){cfg.pendFotos=null;save()}
   try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}
-  if(navigator.canShare&&navigator.canShare({files}))await navigator.share({files});
-  else{if(!auto){window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}return'error'}
- }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto){for(const p of sel){p.q=true;p.on=true;await tx('p','readwrite',s=>s.put(p))}draw();toast('Quedó guardado para enviar luego')}return'error'}
+  if(auto){
+   if(navigator.canShare&&navigator.canShare({files}))await navigator.share({files});
+   else return'error'
+  }else{
+   for(let ci=0;ci<files.length;ci+=8){
+    const batch=files.slice(ci,ci+8);
+    if(navigator.canShare&&!navigator.canShare({files:batch})){window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');return'error'}
+    await navigator.share({files:batch});
+   }
+  }
+ }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto){draw();toast('No se pudo enviar todo, quedaron pendientes, toca Compartir de nuevo')}return'error'}
  if(again){toast('Enviado');if(!auto)txtAparte(data.text);return'ok'}
  cfg.lns=null;cfg.ns='';curNS='';save();
  busy(true,'Guardando envío…');
