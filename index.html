@@ -738,52 +738,85 @@ async function enviar(opts){
  const again=opts&&opts.again?hist.find(x=>String(x.id)===String(opts.again)):null;if(again)sp=!!again.esp;
  const yo=cfg.nombre.trim(),nombre=again?(again.nombre||cfg.nombre.trim()):((opts&&opts.owner)||yo);
  if(!yo){if(!auto){toast('Selecciona tu nombre primero');pickName()}return'skip'}
- let sel=again?(again.blobs||[]).map((b,i)=>{const f=(again.info||[])[i]||{};return{id:i,ts:f.ts||again.id,por:f.por||again.nombre,apt:f.apt||'',ns:f.ns||'',nt:f.nt||'',ntx:f.ntx||'',loc:f.loc||'',blob:b}}).filter((_,i)=>opts.idx==null||i===opts.idx):opts&&opts.only?photos.filter(p=>opts.only.includes(p.id)):photos.filter(p=>!!p.nt===sp&&(p.on||p.q));
+ let sel=again?(again.blobs||[]).map((b,i)=>{const f=(again.info||[])[i]||{};return{id:i,ts:f.ts||again.id,por:f.por||again.nombre,apt:f.apt||'',ns:f.ns||'',nt:f.nt||'',ntx:f.ntx||'',loc:f.loc||'',blob:b}}).filter((_,i)=>opts.idx==null||i===opts.idx):opts&&opts.only?photos.filter(p=>opts.only.includes(p.id)):photos.filter(p=>!!p.nt===sp);
  if(!sel.length)return'skip';
  if(!again&&opts&&opts.only&&sel.every(p=>p.nt))sp=true;lk=sp?(cfg.wlink2||''):(cfg.wlink||'');
  {const order=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]=[];order.push(k)}gm[k].push(p)});sel=order.flatMap(k=>gm[k])}
  if(!navigator.onLine&&auto){
   for(const p of sel){p.q=true;p.on=true;await tx('p','readwrite',s=>s.put(p))}
   draw();return'skip'}
+ const totalSel=sel.slice();
  const base=nombre.replace(/[^\w]+/g,'_');
  const files=sel.map((p,i)=>new File([p.blob],`${base}${aptL(p)?'_'+aptL(p):''}_${i+1}.jpg`,{type:'image/jpeg'}));
  const ahora=Date.now(),en=cfg.idioma==='en',wf=en?'photo':'foto';
  let lines='';if(sel.some(p=>aptL(p)||ntEN(p))){const g=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]={p,n:0};g.push(gm[k])}gm[k].n++});lines='\n'+g.map(x=>{const t=sp?(x.p.ns==='N'?'North':x.p.ns==='S'?'South':''):towerN(x.p.ns),a=(x.p.apt||'').trim();const lb=(t||a)?`${t?t+' ':''}${a?'Apt '+a:''}`.trim():(en?'No apt':'Sin apt');const nn=ntEN(x.p);if(sp)return nn?`${lb} — ${nn}`:lb;return`${lb}: ${x.n} ${wf}${x.n>1?'s':''}${nn?' — '+nn:''}`}).join('\n')}
  const by=nombre!==yo?(en?` (sent by ${yo})`:` (enviado por ${yo})`):'';
  const data={files,text:sp?lines.trim():`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
-  if(lines.trim()){
-   try{
-    const allLines=[`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}`].concat(lines.trim().split('\n'));
-    const cv=document.createElement('canvas');cv.width=1080;const lh=52;cv.height=80+allLines.length*lh+40;
-    const g=cv.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,cv.width,cv.height);g.fillStyle='#2a2220';g.textBaseline='top';
-    allLines.forEach((ln,i)=>{g.font=(i===0?'700 40px':'500 34px')+' Arial';g.fillText(ln,60,40+i*lh)});
-    const cb=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));if(cb)files.unshift(new File([cb],`${base}_Lista.jpg`,{type:'image/jpeg'}));
-   }catch(e){}
-  }
-
+ // v243: foto Lista robusta, con ajuste de líneas. Si falla, NO se cancela el envío:
+ // se mandan las fotos igual y el texto queda copiado en el portapapeles.
+ let hasLista=false;
+ if(lines.trim()){
+  try{
+   const rawLines=[`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}`].concat(lines.trim().split('\n'));
+   const cv=document.createElement('canvas');cv.width=1080;
+   const g=cv.getContext('2d');const lh=52,maxW=960;
+   const wrapped=[];
+   rawLines.forEach((ln,i)=>{g.font=(i===0?'700 40px':'500 34px')+' Arial';const words=String(ln).split(' ');let cur='';
+    words.forEach(w=>{const test=cur?cur+' '+w:w;if(g.measureText(test).width>maxW&&cur){wrapped.push({t:cur,b:i===0});cur=w}else cur=test});
+    if(cur)wrapped.push({t:cur,b:i===0})});
+   cv.height=80+wrapped.length*lh+40;
+   g.fillStyle='#ffffff';g.fillRect(0,0,cv.width,cv.height);g.fillStyle='#2a2220';g.textBaseline='top';
+   wrapped.forEach((ln,i)=>{g.font=(ln.b?'700 40px':'500 34px')+' Arial';g.fillText(ln.t,60,40+i*lh)});
+   const cb=await new Promise(r=>{try{cv.toBlob(r,'image/jpeg',.92)}catch(e){r(null)}});
+   if(cb){files.unshift(new File([cb],`${base}_Lista.jpg`,{type:'image/jpeg'}));hasLista=true}
+  }catch(e){}
+ }
+ // v243: compartir en lotes, guardando el progreso lote por lote.
+ // La primera foto es siempre la Lista, luego las fotos, en orden.
+ // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
+ // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
+ let sent=[];
+ let aborted=false,shareErr=null;
+ const dropPending=async(ph)=>{if(again)return;try{await tx('p','readwrite',s=>s.delete(ph.id))}catch(e){}try{URL.revokeObjectURL(urls[ph.id]);delete urls[ph.id]}catch(e){}};
  try{
   if(cfg.pendFotos){cfg.pendFotos=null;save()}
   try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}
   if(auto){
-   if(navigator.canShare&&navigator.canShare({files}))await navigator.share({files});
-   else return'error'
+   if(navigator.canShare&&navigator.canShare({files}))await navigator.share({files});else return'error';
+   sent=totalSel.slice();
   }else{
-   for(let ci=0;ci<files.length;ci+=8){
-    const batch=files.slice(ci,ci+8);
-    if(navigator.canShare&&!navigator.canShare({files:batch})){window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');return'error'}
-    await navigator.share({files:batch});
+   for(let fi=0;fi<files.length;fi+=8){
+    const batch=files.slice(fi,fi+8);
+    const batchPhotos=[];batch.forEach((f,j)=>{const pi=fi+j-(hasLista?1:0);if(pi>=0&&totalSel[pi])batchPhotos.push(totalSel[pi])});
+    if(navigator.canShare&&!navigator.canShare({files:batch})){window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank');shareErr='canShare';break}
+    try{
+     await navigator.share({files:batch});
+     for(const ph of batchPhotos){sent.push(ph);await dropPending(ph)}
+    }catch(e){
+     if(e.name==='AbortError'){aborted=true;break}
+     // Lote grande falló: reintentar foto por foto, para que no se pierda todo el lote.
+     if(batch.length>1){
+      for(let j=0;j<batch.length;j++){
+       const f=batch[j],pi=fi+j-(hasLista?1:0),ph=pi>=0?totalSel[pi]:null;
+       try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}
+      }
+      if(aborted)break;
+     }else{shareErr=e;break}
+    }
    }
   }
- }catch(e){if(e.name==='AbortError')return'skip';if(auto&&(e.name==='NotAllowedError'||e.name==='SecurityError'))return'blocked';if(!auto){draw();toast('No se pudo enviar todo, quedaron pendientes, toca Compartir de nuevo')}return'error'}
- if(again){toast('Enviado');if(!auto)txtAparte(data.text);return'ok'}
- cfg.lns=null;cfg.ns='';curNS='';save();
+ }catch(e){if(e.name==='AbortError')aborted=true;else shareErr=e}
+ if(!sent.length){if(aborted)return'skip';draw();toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
+ const total=totalSel.length,queda=total-sent.length;
+ if(again){toast(queda?`Enviado ${sent.length} de ${total}, quedan ${queda}`:'Enviado');if(!auto)txtAparte(data.text);return'ok'}
  busy(true,'Guardando envío…');
- const thumbs=[];for(const p of sel)thumbs.push(await thumb(p.blob));
- await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sel.length,thumbs,info:sel.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sel.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));
- for(const p of sel){await tx('p','readwrite',s=>s.delete(p.id));URL.revokeObjectURL(urls[p.id]);delete urls[p.id]}
- cfg.lns=null;cfg.ns='';curNS='';save();
- await load();busy(false);blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');toast('Enviado. Lista vacía');if(!auto)txtAparte(data.text);
- return'ok'
+ const thumbs=[];for(const p of sent)thumbs.push(await thumb(p.blob));
+ await tx('h','readwrite',s=>s.put({id:Date.now(),nombre,n:sent.length,thumbs,info:sent.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sent.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));
+ for(const p of sent){await dropPending(p)}
+ if(!queda){cfg.lns=null;cfg.ns='';curNS='';save()}
+ await load();busy(false);blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');
+ toast(queda?`Se enviaron ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir de nuevo para seguir`:'Enviado. Lista vacía');if(!auto)txtAparte(data.text);
+ return queda?'partial':'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 const recOpen=()=>$('rec').classList.contains('show');
