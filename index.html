@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v245',APP_VER_FECHA='10 nov 2026';
+const APP_VER='v246',APP_VER_FECHA='10 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -754,79 +754,51 @@ async function enviar(opts){
  let lines='';if(sel.some(p=>aptL(p)||ntEN(p))){const g=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]={p,n:0};g.push(gm[k])}gm[k].n++});lines='\n'+g.map(x=>{const t=sp?(x.p.ns==='N'?'North':x.p.ns==='S'?'South':''):towerN(x.p.ns),a=(x.p.apt||'').trim();const lb=(t||a)?`${t?t+' ':''}${a?'Apt '+a:''}`.trim():(en?'No apt':'Sin apt');const nn=ntEN(x.p);if(sp)return nn?`${lb} — ${nn}`:lb;return`${lb}: ${x.n} ${wf}${x.n>1?'s':''}${nn?' — '+nn:''}`}).join('\n')}
  const by=nombre!==yo?(en?` (sent by ${yo})`:` (enviado por ${yo})`):'';
  const data={files,text:sp?lines.trim():`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
- // v243: foto Lista robusta, con ajuste de líneas. Si falla, NO se cancela el envío:
- // se mandan las fotos igual y el texto queda copiado en el portapapeles.
- let hasLista=false;
- if(lines.trim()){
-  for(let li=0;li<2&&!hasLista;li++)try{
-   const rawLines=[`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}`].concat(lines.trim().split('\n'));
-   const cv=document.createElement('canvas');cv.width=1080;
-   const g=cv.getContext('2d');const lh=52,maxW=960;
-   const wrapped=[];
-   rawLines.forEach((ln,i)=>{g.font=(i===0?'700 40px':'500 34px')+' Arial';const words=String(ln).split(' ');let cur='';
-    words.forEach(w=>{const test=cur?cur+' '+w:w;if(g.measureText(test).width>maxW&&cur){wrapped.push({t:cur,b:i===0});cur=w}else cur=test});
-    if(cur)wrapped.push({t:cur,b:i===0})});
-   cv.height=80+wrapped.length*lh+40;
-   g.fillStyle='#ffffff';g.fillRect(0,0,cv.width,cv.height);g.fillStyle='#2a2220';g.textBaseline='top';
-   wrapped.forEach((ln,i)=>{g.font=(ln.b?'700 40px':'500 34px')+' Arial';g.fillText(ln.t,60,40+i*lh)});
-   const cb=await new Promise(r=>{try{cv.toBlob(r,'image/jpeg',.92)}catch(e){r(null)}});
-   if(cb){files.unshift(new File([cb],`${base}_Lista.jpg`,{type:'image/jpeg'}));hasLista=true}
-  }catch(e){}}
- if(lines.trim()&&!hasLista){toast('No se pudo crear la foto Lista; no se envió nada, toca Compartir de nuevo');return'error'}
- // v243: compartir en lotes, guardando el progreso lote por lote.
- // La primera foto es siempre la Lista, luego las fotos, en orden.
+ // v246: SIN foto Lista. Randy no quiere la imagen Lista: el texto de la lista
+ // va como pie del primer lote de fotos reales (ver bucle de lotes abajo).
+ // v246: compartir en lotes de 8, guardando el progreso lote por lote.
+ // El texto de la lista va como pie del PRIMER lote (ver shareBatch).
  // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
  // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
  let sent=[];
- let aborted=false,shareErr=null,listaSent=false,captionSent=false;
+ let aborted=false,shareErr=null,captionSent=false,captionTried=false;
  const dropPending=async(ph)=>{if(again)return;try{await tx('p','readwrite',s=>s.delete(ph.id))}catch(e){}try{URL.revokeObjectURL(urls[ph.id]);delete urls[ph.id]}catch(e){}};
  try{
   if(cfg.pendFotos){cfg.pendFotos=null;save()}
   try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}
-  // v245: caption de WhatsApp. La primera foto (Lista) se comparte SOLA con el
-  // texto (navigator.share({files:[Lista], text})): así WhatsApp puede poner el
-  // texto como pie de esa foto, como cuando se escribe algo al enviar una foto.
-  // No se pone el texto en los lotes de fotos: hay teléfonos/navegadores que al
-  // recibir texto+archivos mandan solo el texto y descartan los archivos, y eso
-  // dejaría fotos marcadas como enviadas sin llegar a WhatsApp. La Lista es
-  // regenerable, así que si ese intento manda solo el texto, no se pierde nada:
-  // la lista llega como texto y las fotos reales salen después, solo con archivos.
-  listaSent=false;captionSent=false;
-  if(hasLista){
-   const listaFile=files[0];
-   const comboOK=!navigator.canShare||navigator.canShare({files:[listaFile],text:data.text});
+  // v246: sin foto Lista; el texto va como pie del primer lote de fotos reales (ver bucle).
+  // v246: el texto de la lista va como pie del PRIMER lote de fotos reales.
+ // La v245 gastaba el único gesto del usuario en compartir la Lista sola;
+ // al volver de WhatsApp, el siguiente share ya no tenía activación válida
+ // (NotAllowedError) o la página se había descartado, y las fotos reales
+ // nunca salían. Ahora el primer compartir —el que sí tiene el gesto—
+ // lleva texto + las primeras 8 fotos reales. Los lotes siguientes van
+ // solo con archivos; si alguno falla, las fotos quedan pendientes y el
+ // siguiente Compartir sigue con lo que falta, sin repetir lo ya enviado.
+ {
+  for(let fi=0;fi<files.length;fi+=8){
+   const batch=files.slice(fi,fi+8);
+   const batchPhotos=[];batch.forEach((f,j)=>{const ph=totalSel[fi+j];if(ph)batchPhotos.push(ph)});
+   const withText=fi===0&&!captionTried&&!!data.text.trim();
+   if(withText)captionTried=true;
+   const shareBatch=async()=>{if(withText){const ok=!navigator.canShare||navigator.canShare({files:batch,text:data.text});if(ok){try{await navigator.share({files:batch,text:data.text});captionSent=true;return}catch(e){if(e.name==='AbortError')throw e}}await navigator.share({files:batch})}else await navigator.share({files:batch})};
+   if(navigator.canShare&&!navigator.canShare({files:batch})){for(let j=0;j<batch.length;j++){const f=batch[j],ph=totalSel[fi+j]||null;try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}}if(aborted)break;continue}
    try{
-    if(comboOK){await navigator.share({files:[listaFile],text:data.text});captionSent=true}
-    else await navigator.share({files:[listaFile]});
-    listaSent=true;
+    await shareBatch();
+    for(const ph of batchPhotos){sent.push(ph);await dropPending(ph)}
    }catch(e){
-    if(e.name==='AbortError')throw e;
-    if(comboOK){try{await navigator.share({files:[listaFile]});listaSent=true}catch(e2){if(e2.name==='AbortError')throw e2}}
-   }
-   files=files.slice(1);hasLista=false;
-  }
-  // v245: todas las vías (manual y automática) comparten en lotes de 8.
-  {
-   for(let fi=0;fi<files.length;fi+=8){
-    const batch=files.slice(fi,fi+8);
-    const batchPhotos=[];batch.forEach((f,j)=>{const pi=fi+j-(hasLista?1:0);if(pi>=0&&totalSel[pi])batchPhotos.push(totalSel[pi])});
-    if(navigator.canShare&&!navigator.canShare({files:batch})){for(let j=0;j<batch.length;j++){const f=batch[j],pi=fi+j-(hasLista?1:0),ph=pi>=0?totalSel[pi]:null;try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}}if(aborted)break;continue}
-    try{
-     await navigator.share({files:batch});
-     for(const ph of batchPhotos){sent.push(ph);await dropPending(ph)}
-    }catch(e){
-     if(e.name==='AbortError'){aborted=true;break}
-     // Lote grande falló: reintentar foto por foto, para que no se pierda todo el lote.
-     if(batch.length>1){
-      for(let j=0;j<batch.length;j++){
-       const f=batch[j],pi=fi+j-(hasLista?1:0),ph=pi>=0?totalSel[pi]:null;
-       try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}
-      }
-      if(aborted)break;
-     }else{shareErr=e;break}
-    }
+    if(e.name==='AbortError'){aborted=true;break}
+    // Lote grande falló: reintentar foto por foto, para que no se pierda todo el lote.
+    if(batch.length>1){
+     for(let j=0;j<batch.length;j++){
+      const f=batch[j],ph=totalSel[fi+j]||null;
+      try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}
+     }
+     if(aborted)break;
+    }else{shareErr=e;break}
    }
   }
+ }
  }catch(e){if(e.name==='AbortError')aborted=true;else shareErr=e}
  if(!sent.length){if(aborted)return'skip';draw();if(shareErr){try{window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}catch(e){}toast('No se pudo compartir las fotos; el texto quedó listo en WhatsApp (pulsa Enviar allí) y las fotos siguen pendientes')}else toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
  const total=totalSel.length,queda=total-sent.length;
@@ -850,7 +822,7 @@ async function enviar(opts){
  try{await load()}catch(e){toast('Se envió, pero no se pudo actualizar la pantalla; actualiza la app')}
  }finally{clearTimeout(_bw);try{busy(false)}catch(e){}}
  blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');
- toast(queda?`Se enviaron ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir de nuevo para seguir`:(listaSent?(captionSent?'Enviado. La lista va como primera foto con el texto de pie':'Enviado. La lista va como primera foto; el texto quedó copiado, pégalo en WhatsApp si lo quieres como texto'):(lines.trim()?'Enviado. La foto Lista no salió; el texto quedó copiado, pégalo en WhatsApp':'Enviado. Sin lista: las fotos no tenían apartamento ni nota')));if(!auto)txtAparte(data.text);
+ toast(queda?`Se enviaron ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir de nuevo para seguir`:(captionSent?'Enviado. La lista va como pie de la primera foto':(data.text.trim()?'Enviado. El texto quedó copiado, pégalo en WhatsApp si lo quieres como pie':'Enviado. Sin lista: las fotos no tenían apartamento ni nota')));if(!auto)txtAparte(data.text);
  return queda?'partial':'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
