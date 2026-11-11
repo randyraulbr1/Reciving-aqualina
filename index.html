@@ -238,7 +238,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 #mbx .row2 input{border-radius:14px;min-height:50px}
 #mbx .card input.tok{border-radius:14px;min-height:50px;margin-bottom:10px}
 </style></head><body>
-<div id="splash"><h2 id="sptit"><span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>R</span>eceiving</h2><div class="spin"></div><div class="ver" id="sver">v247 · 10 nov 2026</div></div>
+<div id="splash"><h2 id="sptit"><span class="r1"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" transform="translate(20 20) scale(1.16) translate(-20 -20)" fill="none" stroke="var(--gold)" stroke-width=".55" stroke-linejoin="round"/><path d="M12.74 12.74A7.6 7.6 0 1 1 27.26 12.74A7.6 7.6 0 1 1 27.26 27.26A7.6 7.6 0 1 1 12.74 27.26A7.6 7.6 0 1 1 12.74 12.74Z" fill="var(--red)" stroke="var(--red)" stroke-width="1" stroke-linejoin="round"/></svg>R</span>eceiving</h2><div class="spin"></div><div class="ver" id="sver">v248 · 11 nov 2026</div></div>
 <div id="ptr"><i></i></div>
 <div id="busy"><div class="spin"></div><span id="btxt">Preparando…</span></div>
 <button id="gear" aria-label="Opciones" data-t2="opc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button id="chip" aria-label="Cambiar nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span id="chn"></span></button>
@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v247',APP_VER_FECHA='10 nov 2026';
+const APP_VER='v248',APP_VER_FECHA='11 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -762,10 +762,12 @@ async function enviar(opts){
  let lines='';if(sel.some(p=>aptL(p)||ntEN(p))){const g=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]={p,n:0};g.push(gm[k])}gm[k].n++});lines='\n'+g.map(x=>{const t=sp?(x.p.ns==='N'?'North':x.p.ns==='S'?'South':''):towerN(x.p.ns),a=(x.p.apt||'').trim();const lb=(t||a)?`${t?t+' ':''}${a?'Apt '+a:''}`.trim():(en?'No apt':'Sin apt');const nn=ntEN(x.p);if(sp)return nn?`${lb} — ${nn}`:lb;return`${lb}: ${x.n} ${wf}${x.n>1?'s':''}${nn?' — '+nn:''}`}).join('\n')}
  const by=nombre!==yo?(en?` (sent by ${yo})`:` (enviado por ${yo})`):'';
  const data={files,text:sp?lines.trim():`${nombre}${by} — ${files.length} ${wf}${files.length>1?'s':''}${cfg.msgf?` · ${fD(ahora)} · ${fT(ahora)}`:''}${lines}`};
- // v246: SIN foto Lista. Randy no quiere la imagen Lista: el texto de la lista
- // va como pie del primer lote de fotos reales (ver bucle de lotes abajo).
- // v246: compartir en lotes de 8, guardando el progreso lote por lote.
- // El texto de la lista va como pie del PRIMER lote (ver shareBatch).
+ // v248: SIN foto Lista. Randy no quiere la imagen Lista: el texto de la lista
+ // va como pie de la PRIMERA foto real (ver primer compartir abajo).
+ // En la v245 el texto SÍ llegó como pie con 1 foto + texto, y en la v247
+ // Randy confirmó que con 8 fotos juntas WhatsApp acepta las fotos y
+ // descarta el texto. Por eso el primer compartir lleva 1 foto + texto,
+ // y las demás fotos van después en lotes de 8, solo con archivos.
  // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
  // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
  let sent=[];
@@ -774,22 +776,38 @@ async function enviar(opts){
  try{
   if(cfg.pendFotos){cfg.pendFotos=null;save()}
   try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}
-  // v246: sin foto Lista; el texto va como pie del primer lote de fotos reales (ver bucle).
-  // v246: el texto de la lista va como pie del PRIMER lote de fotos reales.
- // La v245 gastaba el único gesto del usuario en compartir la Lista sola;
- // al volver de WhatsApp, el siguiente share ya no tenía activación válida
- // (NotAllowedError) o la página se había descartado, y las fotos reales
- // nunca salían. Ahora el primer compartir —el que sí tiene el gesto—
- // lleva texto + las primeras 8 fotos reales. Los lotes siguientes van
- // solo con archivos; si alguno falla, las fotos quedan pendientes y el
- // siguiente Compartir sigue con lo que falta, sin repetir lo ya enviado.
- {
-  for(let fi=0;fi<files.length;fi+=8){
+  // v248: primer compartir = exactamente la PRIMERA foto real + el texto
+  // de la lista como pie. Este es el compartir que tiene el gesto del
+  // usuario, así que es el que WhatsApp acepta con texto (como en la v245).
+  // Si el teléfono rechaza el combo texto+1 foto, la primera foto sale
+  // sola (sin texto) y el texto queda copiado al portapapeles.
+  // Si el usuario cancela aquí, no se envió nada: todo queda pendiente.
+  if(files.length&&data.text.trim()){
+   captionTried=true;
+   const f0=files[0],ph0=totalSel[0];
+   const shareFirst=async()=>{
+    const ok=!navigator.canShare||navigator.canShare({files:[f0],text:data.text});
+    if(ok){try{await navigator.share({files:[f0],text:data.text});captionSent=true;return}catch(e){if(e.name==='AbortError')throw e}}
+    await navigator.share({files:[f0]});
+   };
+   try{
+    await shareFirst();
+    sent.push(ph0);await dropPending(ph0);
+   }catch(e){
+    if(e.name==='AbortError'){aborted=true}
+    // Si la primera foto no salió por otro error, no se frena todo: sigue
+    // con las demás fotos y la primera queda pendiente para el próximo Compartir.
+    else{shareErr=e}
+   }
+  }
+  // Las fotos restantes van en lotes de 8, solo con archivos, sin texto.
+  // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
+  // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
+  if(!aborted){
+  for(let fi=captionTried?1:0;fi<files.length;fi+=8){
    const batch=files.slice(fi,fi+8);
    const batchPhotos=[];batch.forEach((f,j)=>{const ph=totalSel[fi+j];if(ph)batchPhotos.push(ph)});
-   const withText=fi===0&&!captionTried&&!!data.text.trim();
-   if(withText)captionTried=true;
-   const shareBatch=async()=>{if(withText){const ok=!navigator.canShare||navigator.canShare({files:batch,text:data.text});if(ok){try{await navigator.share({files:batch,text:data.text});captionSent=true;return}catch(e){if(e.name==='AbortError')throw e}}await navigator.share({files:batch})}else await navigator.share({files:batch})};
+   const shareBatch=async()=>{await navigator.share({files:batch})};
    if(navigator.canShare&&!navigator.canShare({files:batch})){for(let j=0;j<batch.length;j++){const f=batch[j],ph=totalSel[fi+j]||null;try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}}if(aborted)break;continue}
    try{
     await shareBatch();
@@ -806,7 +824,7 @@ async function enviar(opts){
     }else{shareErr=e;break}
    }
   }
- }
+  }
  }catch(e){if(e.name==='AbortError')aborted=true;else shareErr=e}
  if(!sent.length){if(aborted)return'skip';draw();if(shareErr){try{window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}catch(e){}toast('No se pudo compartir las fotos; el texto quedó listo en WhatsApp (pulsa Enviar allí) y las fotos siguen pendientes')}else toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
  const total=totalSel.length,queda=total-sent.length;
