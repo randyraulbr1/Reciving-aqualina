@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v249',APP_VER_FECHA='14 nov 2026';
+const APP_VER='v250',APP_VER_FECHA='14 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -427,10 +427,11 @@ function draw(){
  const m=$('m');
  $('chn').textContent=cfg.nombre||'Elegir nombre';$('chip').classList.toggle('none',!cfg.nombre);$('chip').classList.toggle('net-on',navigator.onLine);$('chip').classList.toggle('net-off',!navigator.onLine);$('chip').style.display=tab==='fotos'?'':'none';
  if(tab==='fotos'){
-  m.innerHTML=`${cfg.logo?`<img class="logo" src="${cfg.logo}">`:''}<h1>${cfg.empresa?`<small class="eb">${esc(cfg.empresa)}</small>`:''}${wordmark()}</h1><div class="verfoot">Receiving · <b>${APP_VER}</b> · ${APP_VER_FECHA}</div>${warnBar()}${netBar()}
+  m.innerHTML=`${cfg.logo?`<img class="logo" src="${cfg.logo}">`:''}<h1>${cfg.empresa?`<small class="eb">${esc(cfg.empresa)}</small>`:''}${wordmark()}</h1><div class="verfoot">Receiving · <b>${APP_VER}</b> · ${APP_VER_FECHA}</div>${warnBar()}${netBar()}${shBar()}
   <div class="head">${photos.length?`<span class="hb" style="margin:0"><button id="gofo" class="gesp" style="margin:0">${photos.filter(p=>!p.nt).length} Fotos</button></span>`:'<b>Sin fotos</b>'}${photos.length?`<span class="hb">${photos.some(p=>p.nt)?`<button id="goesp" class="gesp">${photos.filter(p=>p.nt).length} Esp.</button>`:''}${delSel.size?'<button id="trash" aria-label="Borrar seleccionadas"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>':''}${delMode?'<button id="dcancel">Cancelar</button>':''}</span>`:''}</div>
   ${photos.length?`${photos.some(p=>!p.nt)?'<div class="grid" id="grid"></div>':''}${photos.some(p=>p.nt)?`<label class="t" id="espsec" style="display:block;margin:18px 0 8px">Especiales (${photos.filter(p=>p.nt).length})</label>${nS?`<button class="btn s" id="nsp" style="background:var(--blue);margin:0 0 10px">Compartir especiales</button>`:''}<div class="grid" id="grid2"></div>`:''}`:'<div class="empty"><div class="big"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg></div>Abre la cámara y toma las fotos.<br>Cada foto se guarda sola, sin internet.</div>'}`;
   if($('nsend'))$('nsend').onclick=()=>enviar();if($('nsp'))$('nsp').onclick=()=>enviar({sp:true});if($('winst'))$('winst').onclick=()=>{tab='opc';draw();setTimeout(()=>$('inst')&&$('inst').click(),50)};
+  shWire();
   if($('gofo'))$('gofo').onclick=()=>scrollTo({top:0,behavior:'smooth'});
   if($('goesp'))$('goesp').onclick=()=>{const e=$('espsec');if(e)scrollTo({top:e.getBoundingClientRect().top+scrollY-70,behavior:'smooth'})};
   if($('dcancel'))$('dcancel').onclick=()=>{delMode=false;delSel.clear();draw()};
@@ -473,6 +474,7 @@ function draw(){
   ${isIOS()?'':'<div class="opt"><span>Copia en la galería (Descargas)<br><small style="color:var(--muted)">Guarda cada foto también en el teléfono</small></span><label class="sw"><input type="checkbox" id="ocp"><i></i></label></div>'}
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido':'Normal'}</span></div>
   <div class="opt"><span>Versión de la app</span><span style="text-align:right"><span id="over" style="color:var(--red);font-size:22px;font-weight:800">${APP_VER}</span><br><small style="color:var(--muted);font-size:13px">${APP_VER_FECHA}</small><br><button class="btn s" id="vupd" style="margin-top:6px;padding:6px 12px;font-size:13px">Actualizar app</button></span></div>
+  <div class="opt"><span>Diagnóstico del último envío</span><button class="selb" id="odg">Ver</button></div>
   <div class="opt"><span>Idioma / Language</span><button class="selb" id="oid"></button></div>
   <div class="opt"><span>Clave de mi perfil<br><small style="color:var(--muted)">Opcional: 4 números para que nadie use tu nombre</small></span><button class="selb" id="opin"></button></div>
   <div class="opt"><span>Notificaciones</span><button class="btn" id="onot" style="display:inline-flex;width:auto;padding:8px 14px;font-size:15px;margin:0"></button></div>
@@ -491,7 +493,7 @@ function draw(){
   const nst=()=>{const b=$('onot');if(!b)return;const P=window.Notification?Notification.permission:'none';b.textContent=P==='granted'?'Activadas':P==='denied'?'Bloqueadas':P==='none'?'No disponible':'Activar';b.disabled=P!=='default';b.style.background=P==='granted'?'var(--gold)':''};nst();
   $('onot').onclick=async()=>{try{await Notification.requestPermission()}catch(e){}nst()};
   $('ocierre').onclick=cierreModal;$('oprf').onclick=()=>pickName();$('oadm').onclick=()=>adminLogin();
-  $('opin').textContent=(cfg.pins||{})[cfg.nombre]?'Activa':'Sin clave';$('opin').onclick=()=>profPin();$('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v&&('v'+v)!==APP_VER?APP_VER+' (caché: v'+v+')':APP_VER}).catch(()=>{})}catch(e){}if($('vupd'))$('vupd').onclick=()=>{toast('Buscando actualización…');try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})}catch(e){}setTimeout(()=>location.reload(),1800)};if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
+if($('odg'))$('odg').onclick=()=>{const d=cfg.shDiag;modal(`<h3>Último envío</h3><p class="ptot" style="text-align:left;word-break:break-word">${d?esc(JSON.stringify(d)):'Sin datos todavía'}</p><button class="pk" id="dgok">Cerrar</button>`,close=>{$('dgok').onclick=close})};$('opin').textContent=(cfg.pins||{})[cfg.nombre]?'Activa':'Sin clave';$('opin').onclick=()=>profPin();$('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v&&('v'+v)!==APP_VER?APP_VER+' (caché: v'+v+')':APP_VER}).catch(()=>{})}catch(e){}if($('vupd'))$('vupd').onclick=()=>{toast('Buscando actualización…');try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})}catch(e){}setTimeout(()=>location.reload(),1800)};if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
 }
@@ -741,24 +743,34 @@ async function logErr(nombre,sel,motivo){const thumbs=[];for(const p of sel){try
 const grupoOk=()=>/^https?:\/\//i.test((cfg.wlink||'').trim());
 let lastRem=+(()=>{try{return localStorage.getItem('lrem')}catch(e){return 0}})()||0;let nextTry=0,blocked=false,trying=false,lastErr=0;
 function txtAparte(t){return;}
-// v249: preguntar antes de borrar de Pendientes. navigator.share resuelve
-// en cuanto se elige WhatsApp en la ventanilla, NO cuando se pulsa Enviar
-// dentro de WhatsApp. En la v248 la app borraba las fotos de Pendientes al
-// resolver el compartir: si Randy cancelaba dentro de WhatsApp, las fotos
-// ya no estaban en Pendientes aunque nunca se enviaron. Ahora nada se
-// borra de Pendientes ni se guarda en Historial hasta que él confirme
-// "Sí, se envió". Si cierra el cartel tocando fuera (o cierra la app sin
-// responder), la respuesta es NO: todo queda pendiente (opción segura).
-function preguntarEnvio(){
- return new Promise(res=>{
-  let done=false,obs=null;
-  const fin=v=>{if(done)return;done=true;try{obs&&obs.disconnect()}catch(e){}res(v)};
-  modal(`<h3>¿Se envió en WhatsApp?</h3><p class="ptot">Si se envió, las fotos salen de Pendientes y quedan en Historial. Si no se envió, quedan pendientes para enviarlas de nuevo.</p><button class="pk" id="cfSi">Sí, se envió</button><button class="pk" id="cfNo">No, no se envió</button>`,close=>{
-   $('cfSi').onclick=()=>{close();fin(true)};
-   $('cfNo').onclick=()=>{close();fin(false)};
-  });
-  try{obs=new MutationObserver(()=>{if(!$('mdl').classList.contains('show'))fin(false)});obs.observe($('mdl'),{attributes:true,attributeFilter:['class']})}catch(e){}
- });
+// v250: SIN cartel bloqueante. navigator.share resuelve cuando se elige
+// WhatsApp, no cuando se pulsa Enviar. Regla: ninguna foto sale de Pendientes
+// sin confirmación. Al compartir, las fotos se MARCAN (p.sh) pero siguen en
+// Pendientes; un aviso fijo en Inicio pregunta "Sí, se enviaron / No".
+// Solo "Sí" las pasa a Historial. Si nadie responde, siguen pendientes.
+async function commitSent(sent,nombre,sp,full){
+ const thumbs=[];for(const p of sent){try{thumbs.push(await thumb(p.blob))}catch(e){thumbs.push('')}}
+ let histSaved=false;
+ try{await tx('h','readwrite',s=>s.put({id:Date.now()+Math.random(),nombre,n:sent.length,thumbs,info:sent.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sent.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));histSaved=true}catch(e){}
+ if(!histSaved)return false;
+ for(const p of sent){try{await tx('p','readwrite',s=>s.delete(p.id))}catch(e){}try{URL.revokeObjectURL(urls[p.id]);delete urls[p.id]}catch(e){}}
+ if(full){cfg.lns=null;cfg.ns='';curNS='';save()}
+ return true;
+}
+const shPend=()=>photos.filter(p=>p.sh);
+function shBar(){const l=shPend();if(!l.length)return'';return`<div class="shbar" style="margin:10px 0;padding:14px;border-radius:14px;border:2px solid var(--red);background:var(--card,#fff)"><b>¿Se enviaron ${l.length} foto${l.length>1?'s':''} en WhatsApp?</b><div style="font-size:13px;color:var(--muted);margin:4px 0 10px">Siguen en Pendientes hasta que confirmes.</div><div style="display:flex;gap:10px"><button class="btn s" id="shyes" style="flex:1;margin:0">Sí, se enviaron</button><button class="btn s" id="shno" style="flex:1;margin:0;background:var(--muted)">No se enviaron</button></div></div>`}
+function shWire(){
+ if($('shno'))$('shno').onclick=async()=>{for(const p of shPend()){delete p.sh;try{await tx('p','readwrite',s=>s.put(p))}catch(e){}}toast('Quedan pendientes');draw()};
+ if($('shyes'))$('shyes').onclick=async()=>{
+  const l=shPend();if(!l.length)return;busy(true,'Guardando envío…');
+  const _bw=setTimeout(()=>{try{busy(false)}catch(e){}},25000);let ok=true;
+  try{
+   const gs={};l.forEach(p=>{const k=(p.sh.n||cfg.nombre)+'|'+(p.sh.sp?1:0);(gs[k]=gs[k]||[]).push(p)});
+   for(const k in gs){const g=gs[k];const full=!photos.some(p=>!p.sh);if(!(await commitSent(g,g[0].sh.n||cfg.nombre,!!g[0].sh.sp,full)))ok=false}
+   photos=photos.filter(p=>!l.some(x=>x.id===p.id)||!ok);
+   try{await load()}catch(e){}
+  }finally{clearTimeout(_bw);try{busy(false)}catch(e){}}
+  toast(ok?'Guardado en Historial':'No se pudo guardar en Historial; las fotos siguen pendientes');draw()};
 }
 async function enviar(opts){
  const auto=!!(opts&&opts.auto);
@@ -768,6 +780,7 @@ async function enviar(opts){
  const yo=cfg.nombre.trim(),nombre=again?(again.nombre||cfg.nombre.trim()):((opts&&opts.owner)||yo);
  if(!yo){if(!auto){toast('Selecciona tu nombre primero');pickName()}return'skip'}
  let sel=again?(again.blobs||[]).map((b,i)=>{const f=(again.info||[])[i]||{};return{id:i,ts:f.ts||again.id,por:f.por||again.nombre,apt:f.apt||'',ns:f.ns||'',nt:f.nt||'',ntx:f.ntx||'',loc:f.loc||'',blob:b}}).filter((_,i)=>opts.idx==null||i===opts.idx):opts&&opts.only?photos.filter(p=>opts.only.includes(p.id)):photos.filter(p=>!!p.nt===sp);
+ if(auto&&!again&&sel.some(p=>p.sh))return'skip';
  if(!sel.length){if(!auto)toast('No hay fotos de este tipo para enviar');return'skip'}
  if(!again&&opts&&opts.only&&sel.every(p=>p.nt))sp=true;lk=sp?(cfg.wlink2||''):(cfg.wlink||'');
  {const order=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]=[];order.push(k)}gm[k].push(p)});sel=order.flatMap(k=>gm[k])}
@@ -812,13 +825,19 @@ async function enviar(opts){
   if(files.length&&data.text.trim()){
    captionTried=true;
    const f0=files[0],ph0=totalSel[0];
+   // v250: SIN canShare como filtro (en Android puede decir false con
+   // archivos+texto y caer en silencio a foto sola). Se llama share directo.
+   // Pie máx ~1000 caracteres (WhatsApp corta el pie); el texto completo
+   // queda en el portapapeles. Se guarda diagnóstico en cfg.shDiag.
+   let capTxt=data.text;if(capTxt.length>1000){capTxt=capTxt.slice(0,990).replace(/\n[^\n]*$/,'')+'\n…'}
+   const dg={t:Date.now(),v:APP_VER,len:data.text.length,cap:capTxt.length};
+   try{dg.cs=navigator.canShare?!!navigator.canShare({files:[f0],text:capTxt}):'n/a'}catch(e){dg.cs='err '+e.name}
    const shareFirst=async()=>{
-    const ok=!navigator.canShare||navigator.canShare({files:[f0],text:data.text});
-    if(ok){try{await navigator.share({files:[f0],text:data.text});captionSent=true;return}catch(e){if(e.name==='AbortError')throw e}}
-    await navigator.share({files:[f0]});
+    try{await navigator.share({files:[f0],text:capTxt});captionSent=true;dg.r='ok+texto';return}catch(e){dg.r='combo '+e.name+': '+String(e.message||'').slice(0,80);if(e.name==='AbortError')throw e}
+    await navigator.share({files:[f0]});dg.r+=' -> solo foto';
    };
    try{
-    await shareFirst();
+    try{await shareFirst()}finally{try{cfg.shDiag=dg;save()}catch(e){}}
     // v249: NO borrar de Pendientes aquí (ver arriba): solo se anota.
     sent.push(ph0);
    }catch(e){
@@ -861,38 +880,12 @@ async function enviar(opts){
  if(!sent.length){if(aborted)return'skip';draw();if(shareErr){try{window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}catch(e){}toast('No se pudo compartir las fotos; el texto quedó listo en WhatsApp (pulsa Enviar allí) y las fotos siguen pendientes')}else toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
  const total=totalSel.length,queda=total-sent.length;
  if(again){toast(queda?`Enviado ${sent.length} de ${total}, quedan ${queda}`:'Enviado');if(!auto)txtAparte(data.text);return queda?'partial':'ok'}
- // v249: CONFIRMAR ANTES DE BORRAR. navigator.share resuelve en cuanto se
- // elige WhatsApp en la ventanilla, NO cuando se pulsa Enviar dentro de
- // WhatsApp. En la v248 la app borraba las fotos de Pendientes al resolver
- // el compartir: si Randy cancelaba dentro de WhatsApp, las fotos ya no
- // estaban en Pendientes aunque nunca se enviaron. Ahora nada se borra de
- // Pendientes ni se guarda en Historial hasta que él confirme que sí se
- // envió. Si dice que no (o cierra el cartel / la app sin responder),
- // todo queda pendiente y toca Compartir de nuevo. Los reenvíos desde
- // Historial (again) no pasan por aquí: esas fotos ya viven en Historial.
- if(!(await preguntarEnvio())){toast('Quedan pendientes, toca Compartir de nuevo');draw();return'partial'}
- // v244: quitar las enviadas de la pantalla AL MOMENTO, antes de generar
- // miniaturas o guardar el historial. Antes la pantalla solo se actualizaba
- // después de eso, así que las fotos parecían seguir pendientes o tardaban
- // en quitarse, y si una miniatura fallaba el envío se quedaba atascado
- // en "Guardando envío…" sin actualizar nunca la lista. Sin conexión no
- // interfiere nada aquí: compartir, borrar y guardar son todos locales.
- photos=photos.filter(p=>!sent.some(s=>s.id===p.id));try{draw()}catch(e){}
- busy(true,'Guardando envío…');
- // v245: busy() se apaga SIEMPRE (finally) y con un vigilante de 25 s. En v244,
- // si load() fallaba, busy(false) nunca corría y la app quedaba en "Guardando envío…".
- const _bw=setTimeout(()=>{try{busy(false)}catch(e){}try{toast('Tardó demasiado guardando; revisa Historial')}catch(e){}},25000);
- let histSaved=false;
- try{
- const thumbs=[];for(const p of sent){try{thumbs.push(await thumb(p.blob))}catch(e){thumbs.push('')}}
- try{await tx('h','readwrite',s=>s.put({id:Date.now()+Math.random(),nombre,n:sent.length,thumbs,info:sent.map(p=>({ts:p.ts||Math.floor(p.id),por:p.por||nombre,apt:p.apt||'',ns:p.ns||'',nt:p.nt||'',ntx:p.ntx||'',loc:p.loc||''})),blobs:sent.map(p=>p.blob),exp:Date.now()+BIN_MS,esp:sp||undefined}));histSaved=true}catch(e){}
- for(const p of sent){await dropPending(p)}
- if(!queda&&histSaved){cfg.lns=null;cfg.ns='';curNS='';save()}
- try{await load()}catch(e){toast('Se envió, pero no se pudo actualizar la pantalla; actualiza la app')}
- }finally{clearTimeout(_bw);try{busy(false)}catch(e){}}
- if(!histSaved&&sent.length){for(const p of sent){try{await tx('p','readwrite',s=>s.put(p))}catch(e){}}try{await load()}catch(e){}toast('Se envió, pero no quedó guardado en Historial; las fotos siguen pendientes');return'partial'}
+ // v250: marcar (p.sh) y dejar en Pendientes; el aviso de Inicio pregunta.
+ for(const p of sent){p.sh={t:Date.now(),n:nombre,sp:!!sp};try{await tx('p','readwrite',s=>s.put(p))}catch(e){}}
+ photos=photos.map(p=>{const x=sent.find(q=>q.id===p.id);return x||p});
+ try{draw()}catch(e){}
  blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');
- toast(queda?`Se enviaron ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir de nuevo para seguir`:(captionSent?'Enviado. La lista va como pie de la primera foto':(data.text.trim()?'Enviado. El texto quedó copiado, pégalo en WhatsApp si lo quieres como pie':'Enviado. Sin lista: las fotos no tenían apartamento ni nota')));if(!auto)txtAparte(data.text);
+ toast((queda?`Abiertas ${sent.length} de ${total}, quedan ${queda} sin abrir. `:'')+'Confirma en Inicio si WhatsApp las envió'+(captionSent||!data.text.trim()?'':'. El texto está copiado'));if(!auto)txtAparte(data.text);
  return queda?'partial':'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
