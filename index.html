@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v248',APP_VER_FECHA='11 nov 2026';
+const APP_VER='v249',APP_VER_FECHA='14 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -741,6 +741,25 @@ async function logErr(nombre,sel,motivo){const thumbs=[];for(const p of sel){try
 const grupoOk=()=>/^https?:\/\//i.test((cfg.wlink||'').trim());
 let lastRem=+(()=>{try{return localStorage.getItem('lrem')}catch(e){return 0}})()||0;let nextTry=0,blocked=false,trying=false,lastErr=0;
 function txtAparte(t){return;}
+// v249: preguntar antes de borrar de Pendientes. navigator.share resuelve
+// en cuanto se elige WhatsApp en la ventanilla, NO cuando se pulsa Enviar
+// dentro de WhatsApp. En la v248 la app borraba las fotos de Pendientes al
+// resolver el compartir: si Randy cancelaba dentro de WhatsApp, las fotos
+// ya no estaban en Pendientes aunque nunca se enviaron. Ahora nada se
+// borra de Pendientes ni se guarda en Historial hasta que él confirme
+// "Sí, se envió". Si cierra el cartel tocando fuera (o cierra la app sin
+// responder), la respuesta es NO: todo queda pendiente (opción segura).
+function preguntarEnvio(){
+ return new Promise(res=>{
+  let done=false,obs=null;
+  const fin=v=>{if(done)return;done=true;try{obs&&obs.disconnect()}catch(e){}res(v)};
+  modal(`<h3>¿Se envió en WhatsApp?</h3><p class="ptot">Si se envió, las fotos salen de Pendientes y quedan en Historial. Si no se envió, quedan pendientes para enviarlas de nuevo.</p><button class="pk" id="cfSi">Sí, se envió</button><button class="pk" id="cfNo">No, no se envió</button>`,close=>{
+   $('cfSi').onclick=()=>{close();fin(true)};
+   $('cfNo').onclick=()=>{close();fin(false)};
+  });
+  try{obs=new MutationObserver(()=>{if(!$('mdl').classList.contains('show'))fin(false)});obs.observe($('mdl'),{attributes:true,attributeFilter:['class']})}catch(e){}
+ });
+}
 async function enviar(opts){
  const auto=!!(opts&&opts.auto);
  const photosOnly=!!(opts&&opts.photosOnly);
@@ -768,11 +787,19 @@ async function enviar(opts){
  // Randy confirmó que con 8 fotos juntas WhatsApp acepta las fotos y
  // descarta el texto. Por eso el primer compartir lleva 1 foto + texto,
  // y las demás fotos van después en lotes de 8, solo con archivos.
- // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
- // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
+ // v249: durante esta fase NO se borra nada de Pendientes. navigator.share
+ // resuelve en cuanto se elige WhatsApp en la ventanilla, no cuando se
+ // pulsa Enviar dentro de WhatsApp; lo compartido solo se borra después
+ // de confirmar "Sí, se envió" (ver abajo). Si un lote falla o se cancela,
+ // lo ya compartido tampoco se borra: queda pendiente hasta confirmar.
  let sent=[];
  let aborted=false,shareErr=null,captionSent=false,captionTried=false;
  const dropPending=async(ph)=>{if(again)return;try{await tx('p','readwrite',s=>s.delete(ph.id))}catch(e){}try{URL.revokeObjectURL(urls[ph.id]);delete urls[ph.id]}catch(e){}};
+ // v249: mostrar "Abriendo WhatsApp…" mientras Android prepara la
+ // ventanilla de compartir: sin indicador la app parece trabada y Randy
+ // tocaba Cancelar. Se apaga al terminar la fase de compartir (éxito,
+ // cancelación o error), antes del cartel de confirmación.
+ busy(true,'Abriendo WhatsApp…');
  try{
   if(cfg.pendFotos){cfg.pendFotos=null;save()}
   try{navigator.clipboard.writeText(data.text).catch(()=>{})}catch(e){}
@@ -792,7 +819,8 @@ async function enviar(opts){
    };
    try{
     await shareFirst();
-    sent.push(ph0);await dropPending(ph0);
+    // v249: NO borrar de Pendientes aquí (ver arriba): solo se anota.
+    sent.push(ph0);
    }catch(e){
     if(e.name==='AbortError'){aborted=true}
     // Si la primera foto no salió por otro error, no se frena todo: sigue
@@ -801,24 +829,24 @@ async function enviar(opts){
    }
   }
   // Las fotos restantes van en lotes de 8, solo con archivos, sin texto.
-  // Si un lote falla o se cancela, lo ya enviado NO se vuelve a enviar:
-  // se borra de pendientes en el momento y el siguiente Compartir sigue con lo que falta.
+  // v249: lo compartido NO se borra aquí (ver arriba): solo se anota en
+  // sent y se borra después de confirmar "Sí, se envió".
   if(!aborted){
   for(let fi=captionTried?1:0;fi<files.length;fi+=8){
    const batch=files.slice(fi,fi+8);
    const batchPhotos=[];batch.forEach((f,j)=>{const ph=totalSel[fi+j];if(ph)batchPhotos.push(ph)});
    const shareBatch=async()=>{await navigator.share({files:batch})};
-   if(navigator.canShare&&!navigator.canShare({files:batch})){for(let j=0;j<batch.length;j++){const f=batch[j],ph=totalSel[fi+j]||null;try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}}if(aborted)break;continue}
+   if(navigator.canShare&&!navigator.canShare({files:batch})){for(let j=0;j<batch.length;j++){const f=batch[j],ph=totalSel[fi+j]||null;try{await navigator.share({files:[f]});if(ph){sent.push(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}}if(aborted)break;continue}
    try{
     await shareBatch();
-    for(const ph of batchPhotos){sent.push(ph);await dropPending(ph)}
+    for(const ph of batchPhotos){sent.push(ph)}
    }catch(e){
     if(e.name==='AbortError'){aborted=true;break}
     // Lote grande falló: reintentar foto por foto, para que no se pierda todo el lote.
     if(batch.length>1){
      for(let j=0;j<batch.length;j++){
       const f=batch[j],ph=totalSel[fi+j]||null;
-      try{await navigator.share({files:[f]});if(ph){sent.push(ph);await dropPending(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}
+      try{await navigator.share({files:[f]});if(ph){sent.push(ph)}}catch(e2){if(e2.name==='AbortError'){aborted=true;break}shareErr=e2}
      }
      if(aborted)break;
     }else{shareErr=e;break}
@@ -826,9 +854,23 @@ async function enviar(opts){
   }
   }
  }catch(e){if(e.name==='AbortError')aborted=true;else shareErr=e}
+ // v249: la fase de compartir terminó (éxito, cancelación o error): quitar
+ // "Abriendo WhatsApp…" en todos los caminos, antes del cartel de
+ // confirmación y antes de cualquier retorno de abajo.
+ try{busy(false)}catch(e){}
  if(!sent.length){if(aborted)return'skip';draw();if(shareErr){try{window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}catch(e){}toast('No se pudo compartir las fotos; el texto quedó listo en WhatsApp (pulsa Enviar allí) y las fotos siguen pendientes')}else toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
  const total=totalSel.length,queda=total-sent.length;
  if(again){toast(queda?`Enviado ${sent.length} de ${total}, quedan ${queda}`:'Enviado');if(!auto)txtAparte(data.text);return queda?'partial':'ok'}
+ // v249: CONFIRMAR ANTES DE BORRAR. navigator.share resuelve en cuanto se
+ // elige WhatsApp en la ventanilla, NO cuando se pulsa Enviar dentro de
+ // WhatsApp. En la v248 la app borraba las fotos de Pendientes al resolver
+ // el compartir: si Randy cancelaba dentro de WhatsApp, las fotos ya no
+ // estaban en Pendientes aunque nunca se enviaron. Ahora nada se borra de
+ // Pendientes ni se guarda en Historial hasta que él confirme que sí se
+ // envió. Si dice que no (o cierra el cartel / la app sin responder),
+ // todo queda pendiente y toca Compartir de nuevo. Los reenvíos desde
+ // Historial (again) no pasan por aquí: esas fotos ya viven en Historial.
+ if(!(await preguntarEnvio())){toast('Quedan pendientes, toca Compartir de nuevo');draw();return'partial'}
  // v244: quitar las enviadas de la pantalla AL MOMENTO, antes de generar
  // miniaturas o guardar el historial. Antes la pantalla solo se actualizaba
  // después de eso, así que las fotos parecían seguir pendientes o tardaban
