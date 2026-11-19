@@ -28,3 +28,6 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 - Causa: tras la primera foto (con la lista) Android ya no deja abrir WhatsApp sin un toque; los lotes siguientes fallaban en silencio.
 - Ahora: tras cada compartir sale un boton "Enviar N fotos" (el toque da permiso); lotes de 8. "Ahora no" deja el resto en Pendientes.
 - Quitado el aviso "¿Se enviaron?": lo compartido pasa a Historial (con sus fotos, se puede reenviar); lo no enviado sigue en Pendientes.
+
+# v252
+- Compartir manda TODAS las fotos en un solo compartir (como Guardar copia) con la lista como texto (pie de la primera). Si el telefono rechaza el combo, cae al metodo v251 (1a foto + botones de 8).

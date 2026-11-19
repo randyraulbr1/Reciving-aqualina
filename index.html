@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v251',APP_VER_FECHA='19 nov 2026';
+const APP_VER='v252',APP_VER_FECHA='19 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -837,7 +837,19 @@ async function enviar(opts){
   // Si el teléfono rechaza el combo texto+1 foto, la primera foto sale
   // sola (sin texto) y el texto queda copiado al portapapeles.
   // Si el usuario cancela aquí, no se envió nada: todo queda pendiente.
-  if(files.length&&data.text.trim()){
+  // v252: TODAS las fotos en UN solo compartir (como "Guardar copia"), sin
+  // limite de cantidad ni botones extra, con la lista como texto: WhatsApp
+  // la pone de pie en la primera foto. Si el telefono rechaza el combo, se
+  // sigue con el metodo anterior (primera foto + texto, luego lotes de 8).
+  let allDone=false;
+  if(files.length>1&&data.text.trim()){
+   let ct=data.text;if(ct.length>1000){ct=ct.slice(0,990).replace(/\n[^\n]*$/,'')+'\n…'}
+   const dg2={t:Date.now(),v:APP_VER,modo:'todas+texto',n:files.length,len:data.text.length};
+   try{await navigator.share({files,text:ct});allDone=true;captionSent=true;sent=totalSel.slice();dg2.r='ok'}
+   catch(e){dg2.r=e.name+': '+String(e.message||'').slice(0,80);if(e.name==='AbortError')aborted=true}
+   try{cfg.shDiag=dg2;save()}catch(e){}
+  }
+  if(!allDone&&!aborted&&files.length&&data.text.trim()){
    captionTried=true;
    const f0=files[0],ph0=totalSel[0];
    // v250: SIN canShare como filtro (en Android puede decir false con
@@ -865,7 +877,7 @@ async function enviar(opts){
   // Las fotos restantes van en lotes de 8, solo con archivos, sin texto.
   // v249: lo compartido NO se borra aquí (ver arriba): solo se anota en
   // sent y se borra después de confirmar "Sí, se envió".
-  if(!aborted){
+  if(!aborted&&!allDone){
   for(let fi=captionTried?1:0;fi<files.length;fi+=8){
    if(fi>0){try{busy(false)}catch(e){}const go=await needTap(files.length-fi,fi===1&&captionTried);if(!go){aborted=true;break}busy(true,'Abriendo WhatsApp…')}
    const batch=files.slice(fi,fi+8);
