@@ -23,3 +23,8 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 2. Tomar 1 foto con apt, Compartir > WhatsApp: ¿llega el texto como pie? Si no, Opciones > Diagnostico del ultimo envio y mandar lo que dice.
 3. Compartir y cancelar dentro de WhatsApp: la foto sigue en Pendientes; tocar "No se enviaron".
 4. Compartir y enviar: tocar "Si, se enviaron": pasa a Historial.
+
+# v251 (19 nov)
+- Causa: tras la primera foto (con la lista) Android ya no deja abrir WhatsApp sin un toque; los lotes siguientes fallaban en silencio.
+- Ahora: tras cada compartir sale un boton "Enviar N fotos" (el toque da permiso); lotes de 8. "Ahora no" deja el resto en Pendientes.
+- Quitado el aviso "¿Se enviaron?": lo compartido pasa a Historial (con sus fotos, se puede reenviar); lo no enviado sigue en Pendientes.

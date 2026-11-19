@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v250',APP_VER_FECHA='14 nov 2026';
+const APP_VER='v251',APP_VER_FECHA='19 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -758,7 +758,7 @@ async function commitSent(sent,nombre,sp,full){
  return true;
 }
 const shPend=()=>photos.filter(p=>p.sh);
-function shBar(){const l=shPend();if(!l.length)return'';return`<div class="shbar" style="margin:10px 0;padding:14px;border-radius:14px;border:2px solid var(--red);background:var(--card,#fff)"><b>¿Se enviaron ${l.length} foto${l.length>1?'s':''} en WhatsApp?</b><div style="font-size:13px;color:var(--muted);margin:4px 0 10px">Siguen en Pendientes hasta que confirmes.</div><div style="display:flex;gap:10px"><button class="btn s" id="shyes" style="flex:1;margin:0">Sí, se enviaron</button><button class="btn s" id="shno" style="flex:1;margin:0;background:var(--muted)">No se enviaron</button></div></div>`}
+function shBar(){return'';const l=shPend();if(!l.length)return'';return`<div class="shbar" style="margin:10px 0;padding:14px;border-radius:14px;border:2px solid var(--red);background:var(--card,#fff)"><b>¿Se enviaron ${l.length} foto${l.length>1?'s':''} en WhatsApp?</b><div style="font-size:13px;color:var(--muted);margin:4px 0 10px">Siguen en Pendientes hasta que confirmes.</div><div style="display:flex;gap:10px"><button class="btn s" id="shyes" style="flex:1;margin:0">Sí, se enviaron</button><button class="btn s" id="shno" style="flex:1;margin:0;background:var(--muted)">No se enviaron</button></div></div>`}
 function shWire(){
  if($('shno'))$('shno').onclick=async()=>{for(const p of shPend()){delete p.sh;try{await tx('p','readwrite',s=>s.put(p))}catch(e){}}toast('Quedan pendientes');draw()};
  if($('shyes'))$('shyes').onclick=async()=>{
@@ -772,6 +772,22 @@ function shWire(){
   }finally{clearTimeout(_bw);try{busy(false)}catch(e){}}
   toast(ok?'Guardado en Historial':'No se pudo guardar en Historial; las fotos siguen pendientes');draw()};
 }
+// v251: Android solo deja abrir la ventanilla de compartir con un toque del
+// usuario. Despues de la primera foto (con la lista) ya no hay toque, y los
+// lotes siguientes fallaban en silencio. Ahora, antes de cada lote siguiente,
+// sale un boton: ese toque da el permiso para abrir WhatsApp otra vez.
+function needTap(rest,first){
+ return new Promise(res=>{
+  let done=false,obs=null;
+  const fin=v=>{if(done)return;done=true;try{obs&&obs.disconnect()}catch(e){}res(v)};
+  const n=Math.min(8,rest);
+  modal(`<h3>${first?'Primera foto lista':'Siguiente grupo'}</h3><p class="ptot">Faltan ${rest} foto${rest>1?'s':''} por enviar. Toca el botón para enviar ${n===rest?'':'las siguientes '}${n}.</p><button class="pk" id="ntGo">Enviar ${n} foto${n>1?'s':''}</button><button class="pk" id="ntNo">Ahora no</button>`,close=>{
+   $('ntGo').onclick=()=>{close();fin(true)};
+   $('ntNo').onclick=()=>{close();fin(false)};
+  });
+  try{obs=new MutationObserver(()=>{if(!$('mdl').classList.contains('show'))fin(false)});obs.observe($('mdl'),{attributes:true,attributeFilter:['class']})}catch(e){}
+ });
+}
 async function enviar(opts){
  const auto=!!(opts&&opts.auto);
  const photosOnly=!!(opts&&opts.photosOnly);
@@ -780,7 +796,6 @@ async function enviar(opts){
  const yo=cfg.nombre.trim(),nombre=again?(again.nombre||cfg.nombre.trim()):((opts&&opts.owner)||yo);
  if(!yo){if(!auto){toast('Selecciona tu nombre primero');pickName()}return'skip'}
  let sel=again?(again.blobs||[]).map((b,i)=>{const f=(again.info||[])[i]||{};return{id:i,ts:f.ts||again.id,por:f.por||again.nombre,apt:f.apt||'',ns:f.ns||'',nt:f.nt||'',ntx:f.ntx||'',loc:f.loc||'',blob:b}}).filter((_,i)=>opts.idx==null||i===opts.idx):opts&&opts.only?photos.filter(p=>opts.only.includes(p.id)):photos.filter(p=>!!p.nt===sp);
- if(auto&&!again&&sel.some(p=>p.sh))return'skip';
  if(!sel.length){if(!auto)toast('No hay fotos de este tipo para enviar');return'skip'}
  if(!again&&opts&&opts.only&&sel.every(p=>p.nt))sp=true;lk=sp?(cfg.wlink2||''):(cfg.wlink||'');
  {const order=[],gm={};sel.forEach(p=>{const k=gk(p);if(!(k in gm)){gm[k]=[];order.push(k)}gm[k].push(p)});sel=order.flatMap(k=>gm[k])}
@@ -852,6 +867,7 @@ async function enviar(opts){
   // sent y se borra después de confirmar "Sí, se envió".
   if(!aborted){
   for(let fi=captionTried?1:0;fi<files.length;fi+=8){
+   if(fi>0){try{busy(false)}catch(e){}const go=await needTap(files.length-fi,fi===1&&captionTried);if(!go){aborted=true;break}busy(true,'Abriendo WhatsApp…')}
    const batch=files.slice(fi,fi+8);
    const batchPhotos=[];batch.forEach((f,j)=>{const ph=totalSel[fi+j];if(ph)batchPhotos.push(ph)});
    const shareBatch=async()=>{await navigator.share({files:batch})};
@@ -880,12 +896,14 @@ async function enviar(opts){
  if(!sent.length){if(aborted)return'skip';draw();if(shareErr){try{window.open('https://wa.me/?text='+encodeURIComponent(data.text),'_blank')}catch(e){}toast('No se pudo compartir las fotos; el texto quedó listo en WhatsApp (pulsa Enviar allí) y las fotos siguen pendientes')}else toast('No se pudo enviar, quedaron pendientes, toca Compartir de nuevo');return'error'}
  const total=totalSel.length,queda=total-sent.length;
  if(again){toast(queda?`Enviado ${sent.length} de ${total}, quedan ${queda}`:'Enviado');if(!auto)txtAparte(data.text);return queda?'partial':'ok'}
- // v250: marcar (p.sh) y dejar en Pendientes; el aviso de Inicio pregunta.
- for(const p of sent){p.sh={t:Date.now(),n:nombre,sp:!!sp};try{await tx('p','readwrite',s=>s.put(p))}catch(e){}}
- photos=photos.map(p=>{const x=sent.find(q=>q.id===p.id);return x||p});
- try{draw()}catch(e){}
+ // v251: sin pregunta. Lo que WhatsApp recibio se pasa a Historial (con
+ // sus fotos, se puede reenviar desde ahi); lo que no se abrio sigue en Pendientes.
+ busy(true,'Guardando envío…');
+ let okH=false;try{okH=await commitSent(sent,nombre,sp,!queda)}catch(e){}finally{try{busy(false)}catch(e){}}
+ try{await load()}catch(e){try{draw()}catch(e2){}}
+ if(!okH){toast('No se pudo guardar en Historial; las fotos siguen pendientes');return'partial'}
  blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');
- toast((queda?`Abiertas ${sent.length} de ${total}, quedan ${queda} sin abrir. `:'')+'Confirma en Inicio si WhatsApp las envió'+(captionSent||!data.text.trim()?'':'. El texto está copiado'));if(!auto)txtAparte(data.text);
+ toast(queda?`Enviadas ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir para seguir`:'Enviado'+(captionSent||!data.text.trim()?'':'. El texto está copiado'));if(!auto)txtAparte(data.text);
  return queda?'partial':'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
