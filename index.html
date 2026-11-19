@@ -76,7 +76,7 @@ select,.selb{font-size:16px;border:0;background:var(--bg);color:var(--text);padd
 .sw input:checked+i{background:var(--blue)}.sw input:checked+i:after{transform:translateX(20px)}
 #cam{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #cam.show{display:flex}
-#cam video{flex:1;min-height:0;width:100%;object-fit:cover}
+#cam video{flex:1 1 0;height:0;min-height:0;width:100%;object-fit:cover}
 #cam .ctl{height:130px;display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom);background:#000}
 #shut{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:transparent;padding:0;position:relative}
 #shut:after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff;transition:transform .1s}
@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v252',APP_VER_FECHA='19 nov 2026';
+const APP_VER='v253',APP_VER_FECHA='19 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -346,10 +346,11 @@ function recPos(){}
 function recDraw(){const bx=$('recbar');if(!bx)return;recPos();setTimeout(recPos,300);const l=cfg[recK()]||[];setTimeout(layoutCam,0);bx.innerHTML=l.map((x,i)=>`<button data-ri="${i}">${esc(x.a)}${x.s?'-'+x.s:''}</button>`).join('');bx.querySelectorAll('button').forEach(b=>b.onclick=()=>{const x=l[+b.dataset.ri];if(!x)return;applyAptSel(x.a,x.s)})}
 
 const noGhost=()=>{const f=e=>{e.stopPropagation();e.preventDefault();document.removeEventListener('click',f,true)};document.addEventListener('click',f,true);setTimeout(()=>document.removeEventListener('click',f,true),450)};
-function layoutCam(){try{const cam=$('cam');if(!cam.classList.contains('show'))return;const ab=$('aptbar'),rb=$('recbar'),st=$('strip'),kpd=$('kpad'),kp=cam.classList.contains('kp'),vv=window.visualViewport;const kb=vv?Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)):0;cam.classList.toggle('kb',!kp&&kb>80);
+function layoutCam(){try{const cam=$('cam');if(!cam.classList.contains('show'))return;const ab=$('aptbar'),rb=$('recbar'),st=$('strip'),kpd=$('kpad'),kp=cam.classList.contains('kp'),vv=window.visualViewport;const kb=vv?Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)):0;cam.classList.toggle('kb',!kp&&kb>80);cam.style.height=(kb>80?Math.round(vv.height):innerHeight)+'px';
  ab.style.bottom=kp?(kpd.offsetHeight+10)+'px':(kb>80?(kb+10)+'px':'');
  const aB=Math.max(0,innerHeight-ab.getBoundingClientRect().bottom),rbH=rb.children.length?rb.offsetHeight:0;
  let cur=aB+ab.offsetHeight+8;rb.style.bottom=cur+'px';if(rbH)cur+=rbH+8;const pf=$('aprf');if(pf.style.display==='block'){pf.style.bottom=cur+'px';cur+=pf.offsetHeight+6}st.style.bottom=cur+'px'}catch(e){}}
+try{$('vid').addEventListener('loadedmetadata',()=>layoutCam())}catch(e){}
 (function(){const kp=$('kpad'),cam=$('cam'),ap=$('apt');if(!kp||!ap)return;ap.readOnly=true;ap.setAttribute('inputmode','none');
  const keys=['1','2','3','4','5','6','7','8','9','del','0','ok'];
  kp.innerHTML=keys.map(k=>k==='del'?'<button data-k="del" aria-label="Borrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12z"/><path d="M13 9.5l4 5M17 9.5l-4 5"/></svg></button>':k==='ok'?'<button data-k="ok" class="ok">OK</button>':`<button data-k="${k}">${k}</button>`).join('');
@@ -656,7 +657,7 @@ async function openCam(){
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('fcam').click();return}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cfg.camara},width:{ideal:2560},height:{ideal:1440}},audio:false});}
  catch(e){toast('Sin permiso de cámara');$('fcam').click();return}
- $('vid').srcObject=stream;try{$('vid').play().catch(()=>{})}catch(e){}camWatch(0);setupTools();{const re=$('cam').classList.contains('show'),L0=cfg.lsp&&Date.now()-cfg.lsp.t<36e5?cfg.lsp:null;$('aptns').style.display='flex';if(!re){$('apt').value='';specLoc=spec&&L0&&L0.loc?L0.loc:'N'}if(!re){lastApt='';curNS=!spec&&cfg.lns&&Date.now()-cfg.lns.t<36e5?cfg.lns.v:'';curPH='';pfSync()}buildMot(re)}setNS();syncSL();recDraw();aprfDraw();try{kpOpen(false)}catch(e){}setTimeout(layoutCam,80);session=0;sessIds=[];lowWarned=false;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');bumpIdle(true);
+ $('vid').srcObject=stream;try{$('vid').play().catch(()=>{})}catch(e){}camWatch(0);layoutCam();setTimeout(layoutCam,150);setTimeout(layoutCam,600);setupTools();{const re=$('cam').classList.contains('show'),L0=cfg.lsp&&Date.now()-cfg.lsp.t<36e5?cfg.lsp:null;$('aptns').style.display='flex';if(!re){$('apt').value='';specLoc=spec&&L0&&L0.loc?L0.loc:'N'}if(!re){lastApt='';curNS=!spec&&cfg.lns&&Date.now()-cfg.lns.t<36e5?cfg.lns.v:'';curPH='';pfSync()}buildMot(re)}setNS();syncSL();recDraw();aprfDraw();try{kpOpen(false)}catch(e){}setTimeout(layoutCam,80);session=0;sessIds=[];lowWarned=false;$('count').textContent='0';$('strip').innerHTML='';$('cam').classList.add('show');bumpIdle(true);
 }
 function openHViewer(h,i0){
  const ok=h.blobs&&h.exp>Date.now(),n=h.thumbs.length,src=h.thumbs.map((t,i)=>ok&&h.blobs[i]?URL.createObjectURL(h.blobs[i]):t);let v=document.getElementById('viewer');if(v)v.remove();

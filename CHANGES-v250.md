@@ -31,3 +31,6 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 
 # v252
 - Compartir manda TODAS las fotos en un solo compartir (como Guardar copia) con la lista como texto (pie de la primera). Si el telefono rechaza el combo, cae al metodo v251 (1a foto + botones de 8).
+
+# v253
+- Camara a veces pequena: el video tomaba su tamano del flujo y la altura del visor cambiaba en iOS. Ahora el video llena el espacio (height:0 + flex) y la camara fija su altura al visor real al abrir y al cargar el video.
