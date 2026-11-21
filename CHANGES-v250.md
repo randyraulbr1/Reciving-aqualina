@@ -37,3 +37,6 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 
 # v254
 - Opciones > 'Como se envia la lista': 'Todas juntas' (por defecto) o 'Primera foto con lista' (1a foto+texto, luego botones de 8). Por telefono: algunos WhatsApp descartan el texto cuando llegan varias fotos juntas. Tras compartir el aviso dice que la lista quedo copiada.
+
+# v257
+- Compartir: primero la lista como mensaje de texto (eliges grupo y Enviar), luego un boton 'Enviar N fotos' abre WhatsApp con TODAS las fotos en un solo compartir. Motivo: el WhatsApp de algunos iPhone descarta el texto cuando llega con fotos. Si cancelas, las fotos siguen en Pendientes.
