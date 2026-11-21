@@ -34,3 +34,6 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 
 # v253
 - Camara a veces pequena: el video tomaba su tamano del flujo y la altura del visor cambiaba en iOS. Ahora el video llena el espacio (height:0 + flex) y la camara fija su altura al visor real al abrir y al cargar el video.
+
+# v254
+- Opciones > 'Como se envia la lista': 'Todas juntas' (por defecto) o 'Primera foto con lista' (1a foto+texto, luego botones de 8). Por telefono: algunos WhatsApp descartan el texto cuando llegan varias fotos juntas. Tras compartir el aviso dice que la lista quedo copiada.

@@ -258,7 +258,7 @@ input[data-gk]{caret-color:transparent;cursor:pointer}input[data-gk].gact{border
 const $=id=>document.getElementById(id);
 const S=JSON.parse(localStorage.getItem('cfg')||'{}');
 const cfg=Object.assign({nombre:'',calidad:1600,titulo:'Receiving',camara:'environment',vibrar:true,sonido:true,empresa:'Acqualina',auto:true,volver:true,autoenv:true,idioma:'en',copia:true,msgf:true,sello:true,wlink:'',wabrir:true,empleados:[],nombreTs:0},S);
-const APP_VER='v253',APP_VER_FECHA='19 nov 2026';
+const APP_VER='v254',APP_VER_FECHA='21 nov 2026';
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 cfg.copia=false;
 if(!cfg.tema)cfg.tema='claro';
@@ -475,6 +475,7 @@ function draw(){
   ${isIOS()?'':'<div class="opt"><span>Copia en la galería (Descargas)<br><small style="color:var(--muted)">Guarda cada foto también en el teléfono</small></span><label class="sw"><input type="checkbox" id="ocp"><i></i></label></div>'}
   <div class="opt"><span>Almacenamiento de fotos</span><span style="color:${persistido?'var(--blue)':'var(--muted)'};font-size:14px">${persistido?'Protegido':'Normal'}</span></div>
   <div class="opt"><span>Versión de la app</span><span style="text-align:right"><span id="over" style="color:var(--red);font-size:22px;font-weight:800">${APP_VER}</span><br><small style="color:var(--muted);font-size:13px">${APP_VER_FECHA}</small><br><button class="btn s" id="vupd" style="margin-top:6px;padding:6px 12px;font-size:13px">Actualizar app</button></span></div>
+  <div class="opt"><span>Cómo se envía la lista<br><small style="color:var(--muted)">Si en este teléfono la lista no llega, usa "Primera foto con lista"</small></span><button class="selb" id="omod"></button></div>
   <div class="opt"><span>Diagnóstico del último envío</span><button class="selb" id="odg">Ver</button></div>
   <div class="opt"><span>Idioma / Language</span><button class="selb" id="oid"></button></div>
   <div class="opt"><span>Clave de mi perfil<br><small style="color:var(--muted)">Opcional: 4 números para que nadie use tu nombre</small></span><button class="selb" id="opin"></button></div>
@@ -494,7 +495,8 @@ function draw(){
   const nst=()=>{const b=$('onot');if(!b)return;const P=window.Notification?Notification.permission:'none';b.textContent=P==='granted'?'Activadas':P==='denied'?'Bloqueadas':P==='none'?'No disponible':'Activar';b.disabled=P!=='default';b.style.background=P==='granted'?'var(--gold)':''};nst();
   $('onot').onclick=async()=>{try{await Notification.requestPermission()}catch(e){}nst()};
   $('ocierre').onclick=cierreModal;$('oprf').onclick=()=>pickName();$('oadm').onclick=()=>adminLogin();
-if($('odg'))$('odg').onclick=()=>{const d=cfg.shDiag;modal(`<h3>Último envío</h3><p class="ptot" style="text-align:left;word-break:break-word">${d?esc(JSON.stringify(d)):'Sin datos todavía'}</p><button class="pk" id="dgok">Cerrar</button>`,close=>{$('dgok').onclick=close})};$('opin').textContent=(cfg.pins||{})[cfg.nombre]?'Activa':'Sin clave';$('opin').onclick=()=>profPin();$('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v&&('v'+v)!==APP_VER?APP_VER+' (caché: v'+v+')':APP_VER}).catch(()=>{})}catch(e){}if($('vupd'))$('vupd').onclick=()=>{toast('Buscando actualización…');try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})}catch(e){}setTimeout(()=>location.reload(),1800)};if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
+if($('omod')){const um=()=>{$('omod').textContent=cfg.modoLista==='1ra'?'Primera foto con lista':'Todas juntas'};um();$('omod').onclick=()=>{cfg.modoLista=cfg.modoLista==='1ra'?'todas':'1ra';save();um();toast(cfg.modoLista==='1ra'?'Se enviará la primera foto con la lista y luego el resto':'Se enviarán todas las fotos juntas con la lista')}}
+  if($('odg'))$('odg').onclick=()=>{const d=cfg.shDiag;modal(`<h3>Último envío</h3><p class="ptot" style="text-align:left;word-break:break-word">${d?esc(JSON.stringify(d)):'Sin datos todavía'}</p><button class="pk" id="dgok">Cerrar</button>`,close=>{$('dgok').onclick=close})};$('opin').textContent=(cfg.pins||{})[cfg.nombre]?'Activa':'Sin clave';$('opin').onclick=()=>profPin();$('oid').textContent=cfg.idioma==='es'?'Español':'English';$('oid').onclick=()=>modal(`<h3>Idioma / Language</h3>${[['en','English'],['es','Español']].map(x=>`<button class="pk${cfg.idioma===x[0]?' on':''}" data-l="${x[0]}">${x[1]}${cfg.idioma===x[0]?'<span><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-.12em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}</button>`).join('')}`,close=>document.querySelectorAll('#mbx [data-l]').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(l===cfg.idioma){close();return}cfg.idioma=l;save();try{sessionStorage.setItem('tabR',tab)}catch(e){}location.reload()}));pickOpt('o2','Cámara',[['environment','Trasera'],['user','Frontal']],()=>cfg.camara,v=>{cfg.camara=v;save()});$('o3').checked=cfg.vibrar;try{caches.keys().then(k=>{const v=k.map(x=>(x.match(/^receiving-v(\d+)$/)||[])[1]).filter(Boolean).map(Number).sort((a,b)=>b-a)[0];if($('over'))$('over').textContent=v&&('v'+v)!==APP_VER?APP_VER+' (caché: v'+v+')':APP_VER}).catch(()=>{})}catch(e){}if($('vupd'))$('vupd').onclick=()=>{toast('Buscando actualización…');try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})}catch(e){}setTimeout(()=>location.reload(),1800)};if($('ocp')){$('ocp').checked=cfg.cpg!==false;$('ocp').onchange=e=>{cfg.cpg=e.target.checked;save()}}$('osn').checked=cfg.sonido!==false;$('osn').onchange=e=>{cfg.sonido=e.target.checked;save();if(cfg.sonido)beep()};pickOpt('otm','Tema',[['claro','Claro'],['oscuro','Oscuro'],['auto','Automático']],()=>cfg.tema,v=>{cfg.tema=v;save();aplTema()});
   $('o3').onchange=e=>{cfg.vibrar=e.target.checked;save()};
  }
 }
@@ -843,7 +845,7 @@ async function enviar(opts){
   // la pone de pie en la primera foto. Si el telefono rechaza el combo, se
   // sigue con el metodo anterior (primera foto + texto, luego lotes de 8).
   let allDone=false;
-  if(files.length>1&&data.text.trim()){
+  if(files.length>1&&data.text.trim()&&cfg.modoLista!=='1ra'){
    let ct=data.text;if(ct.length>1000){ct=ct.slice(0,990).replace(/\n[^\n]*$/,'')+'\n…'}
    const dg2={t:Date.now(),v:APP_VER,modo:'todas+texto',n:files.length,len:data.text.length};
    try{await navigator.share({files,text:ct});allDone=true;captionSent=true;sent=totalSel.slice();dg2.r='ok'}
@@ -916,7 +918,7 @@ async function enviar(opts){
  try{await load()}catch(e){try{draw()}catch(e2){}}
  if(!okH){toast('No se pudo guardar en Historial; las fotos siguen pendientes');return'partial'}
  blocked=false;nextTry=0;lastRem=0;try{localStorage.removeItem('lrem')}catch(e){}$('rec').classList.remove('show');
- toast(queda?`Enviadas ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir para seguir`:'Enviado'+(captionSent||!data.text.trim()?'':'. El texto está copiado'));if(!auto)txtAparte(data.text);
+ toast(queda?`Enviadas ${sent.length} de ${total}, quedan ${queda} pendientes, toca Compartir para seguir`:'Enviado'+(data.text.trim()?'. La lista quedó copiada: si no llegó como pie, pégala':''));if(!auto)txtAparte(data.text);
  return queda?'partial':'ok'
 }
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
