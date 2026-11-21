@@ -40,3 +40,6 @@ En Android `navigator.share` resuelve al elegir WhatsApp, no al pulsar Enviar; u
 
 # v257
 - Compartir: primero la lista como mensaje de texto (eliges grupo y Enviar), luego un boton 'Enviar N fotos' abre WhatsApp con TODAS las fotos en un solo compartir. Motivo: el WhatsApp de algunos iPhone descarta el texto cuando llega con fotos. Si cancelas, las fotos siguen en Pendientes.
+
+# v258
+- Vuelve al compartir de la v237: UN solo compartir con todas las fotos + lista como texto, sin pantalla previa, sin title, sin recortar texto. Se quita el texto-primero de la v257 (2 toques).
